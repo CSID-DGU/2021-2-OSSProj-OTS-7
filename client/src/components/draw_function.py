@@ -8,6 +8,7 @@ from pygame import Rect
 block_size = UI_VARIABLES.block_size
 
 
+# 정사각형 그리는 코드
 def draw_rect(x, y, color, screen):
     rect(
         screen,
@@ -16,20 +17,20 @@ def draw_rect(x, y, color, screen):
     )
 
 
+# 외곽선을 포함하여 정사각형 그리는 코드
 def draw_block(x, y, color, screen):
-    rect(
-        screen,
-        color,
-        Rect(x, y, block_size, block_size)
-    )
+    # 정사각형
+    draw_rect(x, y, color, screen)
+    # 외곽선
     rect(
         screen,
         UI_VARIABLES.grey_1,
         Rect(x, y, block_size, block_size),
         1
-    )  # 외곽선인듯함
+    )
 
 
+# Mino 객체의 값을 참조하여 화면에 그림. 다음 미노와 홀드한 미노를 그리는데 사용됨.
 def draw_mino(x: int, y: int, mino: Mino, rotate: int, screen):
     for i in range(4):
         for j in range(4):
