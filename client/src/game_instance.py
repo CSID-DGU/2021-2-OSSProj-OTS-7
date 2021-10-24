@@ -1,7 +1,7 @@
-from components.board import Board
+from client.src.components.board import Board
 import copy
 from random import randint
-from components.mino import Mino
+from client.src.components.mino import Mino
 
 
 def new_mino():

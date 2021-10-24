@@ -1,7 +1,7 @@
 import pygame
 
-from components import draw_function
-from src.variables.ui_variables import UI_VARIABLES
+from client.src.components import draw_function
+from client.src.variables.ui_variables import UI_VARIABLES
 from pygame import Rect
 
 
