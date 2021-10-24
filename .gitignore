@@ -1,5 +1,6 @@
 *.pyc
 .idea/
+.DS_Store
 venv/
 __pychache__
 pt-old
