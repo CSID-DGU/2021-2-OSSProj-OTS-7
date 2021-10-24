@@ -1,7 +1,7 @@
 *.pyc
-.DS_Store
 .idea/
 venv/
 *.sqlite3
 __pychache__
 pt-old
+.DS_Store
