@@ -1,0 +1,6 @@
+*.pyc
+.idea/
+venv/
+*.sqlite3
+__pychache__
+pt-old
