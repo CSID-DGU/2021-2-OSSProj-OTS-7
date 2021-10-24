@@ -1,6 +1,6 @@
 from pygame.draw import rect
-from src.variables.ui_variables import UI_VARIABLES
-from components.mino import Mino
+from client.src.variables.ui_variables import UI_VARIABLES
+from client.src.components.mino import Mino
 from pygame import Rect
 
 # screen = pygame.display.set_mode((300, 374))

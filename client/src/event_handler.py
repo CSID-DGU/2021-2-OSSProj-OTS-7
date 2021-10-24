@@ -1,4 +1,4 @@
-from src.game_instance import GameInstance
+from client.src.game_instance import GameInstance
 import pygame
 from pygame.locals import *
 

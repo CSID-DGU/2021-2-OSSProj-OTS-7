@@ -1,12 +1,7 @@
-import asyncio
-import time
-
 import pygame
-from src.event_handler import EventHandler
-from src.game_instance import GameInstance
-from src.display_drawer import DisplayDrawer
-from src.ot_websocket import OTSWebsocket
-import threading
+from client.src.event_handler import EventHandler
+from client.src.game_instance import GameInstance
+from client.src.display_drawer import DisplayDrawer
 
 
 class OTS:
@@ -25,7 +20,6 @@ class OTS:
         pygame.init()
         pygame.time.set_timer(pygame.USEREVENT, 50)  # 0.05초마다 이벤트 생성
         pygame.display.set_caption("OTS")
-
 
     def run_game(self):
         self.main_loop()
