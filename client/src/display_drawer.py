@@ -11,12 +11,14 @@ class DisplayDrawer:
         self.is_multiplayer = self.game_instance.is_multiplayer
         self.screen = self.get_screen()
 
+    # 싱글플레이 멀티플레이 화면 크기
     def get_screen(self):
         if self.game_instance.is_multiplayer:
             return pygame.display.set_mode((600, 374))
         else:
             return pygame.display.set_mode((300, 374))
 
+    # self.game_instance.status 확인하여 디스플레이 업데이트
     def update_display(self):
         if self.game_instance.status == 'in_game':
             self.draw_in_game_screen()
@@ -34,17 +36,16 @@ class DisplayDrawer:
             self.screen,
             UI_VARIABLES.grey_1,
             Rect(0, 187, 300, 187)
-        )
+        )  # 아마도 하단 검정 박스
         title = UI_VARIABLES.h1.render("PYTRIS™", 1, UI_VARIABLES.grey_1)
         title_start = UI_VARIABLES.h5.render("Press space to start", 1, UI_VARIABLES.white)
         title_info = UI_VARIABLES.h6.render("Copyright (c) 2017 Jason Kim All Rights Reserved.", 1,
                                             UI_VARIABLES.white)
 
-        # TODO title start 글씨 깜빡이게
-
         self.screen.blit(title, (65, 120))
         self.screen.blit(title_info, (40, 335))
 
+    # game_instance 의 status 가 in_game 일 때 렌더링. components.draw_function.py 참조
     def draw_in_game_screen(self):
         draw_function.draw_in_game_screen(self.game_instance.next_mino,
                                           self.game_instance.hold_mino,
@@ -54,18 +55,21 @@ class DisplayDrawer:
                                           self.screen,
                                           self.game_instance.board.temp_matrix)
 
+    # 멀티플레이어 로비.
     def draw_multiplayer_lobby(self):
         pass
 
+    # 일시정지 시 PAUSE 글씨 출력
     def draw_pause(self):
         pause_message = UI_VARIABLES.h2_b.render("PAUSE", 1, UI_VARIABLES.white)
         self.draw_in_game_screen()
         self.screen.blit(pause_message, (62, 105))
 
+    # 게임 오버시 텍스트 오버레이 출력
     def draw_game_over(self):
         over_text_1 = UI_VARIABLES.h2_b.render("GAME", 1, UI_VARIABLES.white)
         over_text_2 = UI_VARIABLES.h2_b.render("OVER", 1, UI_VARIABLES.white)
-        over_start = UI_VARIABLES.h5.render("Press return to continue", 1, UI_VARIABLES.white)
+        # over_start = UI_VARIABLES.h5.render("Press return to continue", 1, UI_VARIABLES.white)
         self.draw_in_game_screen()
         self.screen.blit(over_text_1, (58, 75))
         self.screen.blit(over_text_2, (62, 105))

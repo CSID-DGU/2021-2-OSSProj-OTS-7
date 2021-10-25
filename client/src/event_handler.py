@@ -8,17 +8,20 @@ class EventHandler:
         self.game_instance = game_instance
 
     def handle_event(self, event):
-        if event.type == USEREVENT:
+        if event.type == USEREVENT:  # 타이머 이벤트임. main.py __init__ 참조
             self.on_timer_event()
-        elif event.type == KEYDOWN:
+        elif event.type == KEYDOWN:  # 키 입력 이벤트. KEYDOWN은 키가 눌렸을 때, KEYUP은 키가 눌린 후 다시 올라왔을때
             self.on_key_down_event(event)
-        elif event.type == QUIT:
+        elif event.type == QUIT:  # 종료시
+            # 멀티플레이시 소켓 먼저 닫아야할듯함.
             pygame.quit()
 
+    # 타이머 이벤트
     def on_timer_event(self):
         if self.game_instance.status == 'in_game':
             self.game_instance.count_move_down()
 
+    # 키 입력(DOWN) 이벤트
     def on_key_down_event(self, event):
         if self.game_instance.status == 'in_game':
             if event.key == K_SPACE:
@@ -40,8 +43,14 @@ class EventHandler:
         if event.key == K_ESCAPE:
             self.game_instance.ev_pause_game()
 
+    # 오프라인 2인 대전시 키 입력 이벤트
+    def on_key_down_event_offline_mp(self):
+        pass
+
+    # 키 홀드시 이벤트
     def on_key_hold_event(self):
         pass
 
+    # 멀티플레이어 이벤트
     def on_multiplayer_event(self):
         pass
