@@ -149,11 +149,12 @@ class GameInstance:
     def ev_rotate_right(self):
         mod_list = [0, -1, 1, -2, 2]
         for mod in mod_list:
-            if self.is_rotatable(self.x + mod, self.y, 'r'):
-                self.rotate(x_mod=mod, right_or_left='r')
-            elif self.is_rotatable(self.x, self.y + mod, 'r'):
+            if self.is_rotatable(self.x, self.y + mod, 'r'):
                 self.rotate(y_mod=mod, right_or_left='r')
-            break
+                break
+            elif self.is_rotatable(self.x + mod, self.y, 'r'):
+                self.rotate(x_mod=mod, right_or_left='r')
+                break
 
     def ev_rotate_left(self):
         pass
