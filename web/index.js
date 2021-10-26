@@ -31,8 +31,8 @@ app.post("/signIn", function(req, res) {
   const email_= req.body.email;
   const password_= req.body.password;
   const token_ = randomString();
-  const insertSql =`INSERT INTO accounts (id, email, password,token) VALUES (?,?,?,?)`
-  db.query(insertSql,
+  const insertAccountSql =`INSERT INTO accounts(id, email, password,token) VALUES (?,?,?,?)`
+  db.query(insertAccountSql,
     [id_,email_,password_,token_],
     (error, results, fields) => {
       if (error) {
@@ -42,13 +42,28 @@ app.post("/signIn", function(req, res) {
           "failed": "error ocurred"
         });
       } else {
-        console.log("The solution is: ", results);
-        res.send({
-          "code": 200,
-          "success": "user registered sucessfully"
-        });
+        const insertMatchSql =`INSERT INTO matchHistory (id, email,token) VALUES (?,?,?)`
+        db.query(insertMatchSql,
+          [id_,email_,token_],
+          (error, results, fields) => {
+            if (error) {
+              console.log("error ocurred", error);
+              res.send({
+                "code": 400,
+                "failed": "error ocurred"
+              });
+            } else {
+              console.log("The solution is: ", results);
+              res.send({
+                "code": 200,
+                "success": "user registered sucessfully"
+              });
+            }
+          });
+
       }
     });
+
 });
 app.get("/login",(req,res) => {
   res.render("login")
