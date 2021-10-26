@@ -34,6 +34,10 @@ class OTS:
             self.display_drawer.update_display()
             self.clock.tick(60)  # 60hz
 
+            # 게임 종료
+            if self.event_handler.quit:
+                self.running = False
+
     # 이벤트 핸들러에 이벤트 넘겨주기
     def handle_event(self, event):
         self.event_handler.handle_event(event)
