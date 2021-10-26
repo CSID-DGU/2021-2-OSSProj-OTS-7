@@ -163,7 +163,7 @@ class GameInstance:
             self.move(self.hold_current_mino)
 
     def ev_pause_game(self):
-        if self.status != 'pause':
+        if self.status == 'in_game':
             self.status = 'pause'
         elif self.status == 'pause':
             self.status = 'in_game'
