@@ -4,11 +4,10 @@
 venv/
 __pychache__
 pt-old
-
+*package-lock.json
+*node_modules
 web/node_modules/
 
 web/package-lock.json
-
-web/package.json
 
 web/config/database.js
