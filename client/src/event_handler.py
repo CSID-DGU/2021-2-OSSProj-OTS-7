@@ -62,6 +62,8 @@ class EventHandler:
         self.event_key_map_obj = EventKeyMap()
         self.event_key_map: dict = self.event_key_map_obj.dict
 
+        self.quit = False
+
     # main 이 event 를 넘겨주는 메소드
     def handle_event(self, event):
         # self.event_flags dict 의 key 별 bool 값을 확인하여 사이클마다 실행,
@@ -73,7 +75,7 @@ class EventHandler:
             self.on_key_up_event()
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
-            pygame.quit()
+            self.quit = True
 
         self.check_key_held()
         self.execute_event()
