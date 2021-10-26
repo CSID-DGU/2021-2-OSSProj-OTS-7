@@ -49,7 +49,6 @@ app.post("/signIn", function(req, res) {
         });
       }
     });
-  res.end();
 });
 app.get("/login",(req,res) => {
   res.render("login")
