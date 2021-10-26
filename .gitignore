@@ -1,11 +1,12 @@
 *.pyc
-.idea/
-.DS_Store
-venv/
-__pychache__
+*.idea/
+*.DS_Store
+*venv/
+*__pychache__
 pt-old
 *package-lock.json
-*node_modules
+*node_modules/
+
 web/node_modules/
 
 web/package-lock.json
