@@ -70,7 +70,10 @@ class EventHandler:
         if event.type == USEREVENT:  # 타이머 이벤트임. main.py __init__ 참조
             self.on_timer_event()
         elif event.type == KEYDOWN:  # 키 입력 이벤트. KEYDOWN은 키가 눌렸을 때, KEYUP은 키가 눌린 후 다시 올라왔을때
-            self.on_key_down_event(event)
+            try:
+                self.on_key_down_event(event)
+            except:
+                pass
         elif event.type == KEYUP:
             self.on_key_up_event()
         elif event.type == QUIT:  # 종료시
