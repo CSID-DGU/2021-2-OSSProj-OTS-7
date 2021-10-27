@@ -105,9 +105,10 @@ class EventHandler:
     # key down event 처리
     def on_key_down_event(self, event):
         if self.game_instance.status == 'in_game':
-            todo = self.event_key_map[event.key]
-            self.event_func_map[todo]()
-            self.event_flags_obj.buffer = 5  # 버퍼 초기화
+            todo = self.event_key_map.get(event.key)
+            if todo is not None:
+                self.event_func_map[todo]()
+                self.event_flags_obj.buffer = 5  # 버퍼 초기화
         elif self.game_instance.status == 'pause':
             self.game_instance.ev_pause_game()
         elif self.game_instance.status == 'start_screen':
