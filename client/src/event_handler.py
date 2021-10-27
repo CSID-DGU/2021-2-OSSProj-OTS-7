@@ -104,6 +104,7 @@ class EventHandler:
         if self.game_instance.status == 'in_game':
             todo = self.event_key_map[event.key]
             self.event_func_map[todo]()
+            self.event_flags_obj.buffer = 5  # 버퍼 초기화
         elif self.game_instance.status == 'pause':
             self.game_instance.ev_pause_game()
         elif self.game_instance.status == 'start_screen':
@@ -111,9 +112,9 @@ class EventHandler:
         elif self.game_instance.status == 'game_over':
             self.game_instance.on_game_over()
 
-    # key_up 시 플래그 초기화
+    # key_up 시 버퍼 초기화
     def on_key_up_event(self):
-        self.event_flags_obj.reset()
+        self.event_flags_obj.buffer = 5
 
     # 타이머 이벤트
     def on_timer_event(self):

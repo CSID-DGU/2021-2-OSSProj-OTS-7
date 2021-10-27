@@ -1,4 +1,5 @@
 import pygame
+import sys
 from client.src.event_handler import EventHandler
 from client.src.game_instance import GameInstance
 from client.src.display_drawer import DisplayDrawer
@@ -36,7 +37,8 @@ class OTS:
 
             # 게임 종료
             if self.event_handler.quit:
-                self.running = False
+                self.pygame.quit()
+                sys.exit()
 
     # 이벤트 핸들러에 이벤트 넘겨주기
     def handle_event(self, event):
