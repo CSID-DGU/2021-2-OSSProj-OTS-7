@@ -1,4 +1,5 @@
 from client.src.game_instance import GameInstance
+from client.src.display_drawer  import DisplayDrawer
 import pygame
 from pygame.locals import *
 
@@ -79,6 +80,7 @@ class EventHandler:
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
             self.quit = True
+        # elif event.type == VIDEORESIZE:
 
         self.check_key_held()
         self.execute_event()
