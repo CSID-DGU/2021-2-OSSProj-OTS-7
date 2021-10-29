@@ -5,7 +5,7 @@ from pygame import Rect
 
 # screen = pygame.display.set_mode((300, 374))
 # 멀티플레이시 screen 만 나눠서 사용 가능할듯
-block_size = UI_VARIABLES.block_size
+block_size = UI_VARIABLES.init_block_size
 
 
 # 정사각형 그리는 코드
@@ -84,8 +84,8 @@ def draw_in_game_screen(next_mino: Mino, hold_mino: Mino, score: int, level: int
     screen.blit(goal_value, (220, 330))
 
     # Draw board
-    for x in range(UI_VARIABLES.width):
-        for y in range(UI_VARIABLES.height):
+    for x in range(UI_VARIABLES.init_board_width):
+        for y in range(UI_VARIABLES.init_board_height):
             dx = 17 + block_size * x
             dy = 17 + block_size * y
             draw_block(dx, dy, UI_VARIABLES.t_color[matrix[x][y + 1]], screen)
