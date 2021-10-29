@@ -39,7 +39,10 @@ class UI_VARIABLES:
     double_sound = Sound("./assets/sounds/SFX_SpecialLineClearDouble.wav")
     triple_sound = Sound("./assets/sounds/SFX_SpecialLineClearTriple.wav")
     tetris_sound = Sound("./assets/sounds/SFX_SpecialTetris.wav")
-    origin_background_sound = Sound("./assets/sounds")
+    bgm_list = ["assets/sounds/BGM_level1.wav",
+                "assets/sounds/BGM_level2.wav",
+                "assets/sounds/BGM_level3.wav",
+                "assets/sounds/BGM_level4.wav"]
     # Background colors
     black = (10, 10, 10) #rgb(10, 10, 10)
     white = (255, 255, 255) #rgb(255, 255, 255)

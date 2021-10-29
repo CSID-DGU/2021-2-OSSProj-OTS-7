@@ -17,7 +17,7 @@ class OTS:
         self.game_session = GameInstance(self.is_multiplayer)  # 게임 로직, 상태 등 처리
         self.event_handler = EventHandler(self.game_session)  # 키 입력, 타이머 등 이벤트 처리
         self.display_drawer = DisplayDrawer(self.game_session)  # 화면 업데이트 처리
-
+        self.game_instance = GameInstance(self)
         self.pygame = pygame
         if is_multiplayer:
             self.websocket_client = OTSWebsocket(123, self.game_session)
@@ -34,6 +34,7 @@ class OTS:
         self.main_loop()
 
     def main_loop(self):
+        self.game_instance.play_bgm()
         while self.running:
             # 이벤트 처리
             for event in pygame.event.get():
