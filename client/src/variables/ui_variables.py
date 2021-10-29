@@ -3,10 +3,16 @@ from pygame.mixer import Sound
 
 
 class UI_VARIABLES:
-    block_size = 17  # Height, width of single block
-    width = 10  # Board width
-    height = 20  # Board height
+    init_block_size = 17  # Height, width of single block
+    init_board_width = 10  # Board width
+    init_board_height = 20  # Board height
 
+    init_screen_width = 300  # 초기 스크린 너비
+    init_screen_height = 374  # 초기 스크린 높이
+    init_rect_x = 0  # 하단 검정 박스 x 최소 좌표
+    init_rect_y = 187  # 하단 검정 박스 y최소 좌표
+    init_rect_width = 300  # 하단 검정 박스 너비
+    init_rect_height = 187  # 하단 검정 박스 높이
     pygame.init()
     # Fonts
     font_path = "./assets/fonts/OpenSans-Light.ttf"
@@ -33,7 +39,7 @@ class UI_VARIABLES:
     double_sound = Sound("./assets/sounds/SFX_SpecialLineClearDouble.wav")
     triple_sound = Sound("./assets/sounds/SFX_SpecialLineClearTriple.wav")
     tetris_sound = Sound("./assets/sounds/SFX_SpecialTetris.wav")
-
+    origin_background_sound = Sound("./assets/sounds")
     # Background colors
     black = (10, 10, 10) #rgb(10, 10, 10)
     white = (255, 255, 255) #rgb(255, 255, 255)
@@ -51,3 +57,5 @@ class UI_VARIABLES:
     red = (225, 13, 27) #rgb(225, 13, 27) # Z
 
     t_color = [grey_2, cyan, blue, orange, yellow, green, pink, red, grey_3]
+
+    background_music_ = ("../../assets/")
