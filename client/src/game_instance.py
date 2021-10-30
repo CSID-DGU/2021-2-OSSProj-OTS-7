@@ -1,7 +1,10 @@
+import pygame
+
 from client.src.components.board import Board
 import copy
 from random import randint
 from client.src.components.mino import Mino
+from client.src.variables.ui_variables import UI_VARIABLES
 
 
 def new_mino():
@@ -306,6 +309,11 @@ class GameInstance:
                     # update current mino
                     matrix[self.x + j][self.y + i] = grid[i][j]
         return matrix
+
+    def play_bgm(self):
+        self.bgm = UI_VARIABLES.bgm_list[self.level-1]
+        pygame.mixer.music.load(self.bgm)
+        pygame.mixer.music.play()
 
     # 게임 오버시
     def on_game_over(self):
