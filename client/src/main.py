@@ -1,10 +1,10 @@
 import pygame
 import sys
 import threading
-from client.src.event_handler import EventHandler
-from client.src.game_instance import GameInstance
-from client.src.display_drawer import DisplayDrawer
-from client.src.ot_websocket import OTSWebsocket
+from .event_handler import EventHandler
+from .game_instance import GameInstance
+from .display_drawer import DisplayDrawer
+from .ot_websocket import OTSWebsocket
 
 
 class OTS:

@@ -1,10 +1,10 @@
 import pygame
 
-from client.src.components.board import Board
+from .components.board import Board
 import copy
 from random import randint
-from client.src.components.mino import Mino
-from client.src.variables.ui_variables import UI_VARIABLES
+from .components.mino import Mino
+from .variables.ui_variables import UI_VARIABLES
 
 
 def new_mino():

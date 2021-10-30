@@ -1,5 +1,5 @@
-from client.src.game_instance import GameInstance
-from client.src.display_drawer  import DisplayDrawer
+from .game_instance import GameInstance
+from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
 
