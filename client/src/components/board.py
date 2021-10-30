@@ -1,6 +1,6 @@
 import copy
 
-from client.src.variables.ui_variables import UI_VARIABLES as uv
+from ..variables.ui_variables import UI_VARIABLES as uv
 
 matrix = [[0 for y in range(uv.init_board_height + 1)] for x in range(uv.init_board_width)]  # Board matrix
 
