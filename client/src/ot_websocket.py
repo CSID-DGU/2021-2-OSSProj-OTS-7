@@ -2,10 +2,21 @@ import websocket
 import time
 import threading
 import json
+import pprint
 
 
 def on_message(ws, message):
-    print(message)
+    data = json.loads(message)
+    pprint.pp(data)
+    # parse_message(data)
+
+
+def parse_message(data):
+    data_type = data.get('type')
+    if data_type == 'solicitor_list':
+        pass
+    elif data_type == 'game_data':
+        pass
 
 
 def on_error(ws, error):
@@ -17,7 +28,7 @@ def on_close(ws, close_status_code, close_msg):
 
 
 def on_open(ws):
-    ws.send(json.dumps({'hello': 'server'}))
+    ws.send('a1234')
 
 
 class OTSWebsocket:
@@ -27,14 +38,14 @@ class OTSWebsocket:
         self.user_id = user_id
         self.opponent = None
         self.ws = websocket.WebSocketApp(
-            f"ws://127.0.0.1:8000/ws/json/{user_id}",
+            f"ws://127.0.0.1:8000/ws",
             on_open=on_open,
             on_message=on_message,
             on_error=on_error,
             on_close=on_close,
         )
         self.is_running = False
-        self.thread_send_current = threading.Thread(target=self.send_current_json, daemon=True)
+        self.thread = threading.Thread(target=self.loop_thread, daemon=True)
         self.is_sending_current = False
         self.is_sending_current_json = False
 
@@ -46,13 +57,28 @@ class OTSWebsocket:
         self.is_running = False
         self.ws.close()
 
-    def send_current(self):
-        self.is_sending_current = True
+    def send_json_req(self, req):
+        self.ws.send(json.dumps(req))
 
-        while self.is_sending_current:
-            self.ws.send(str(self.game_instance.score))
+    def add_to_waiting(self):
+        req = {
+            'type': 'add_to_waiting'
+        }
+        self.send_json_req(req)
 
-            time.sleep(1)
+    def solicit(self):
+        req = {
+            'type': 'solicit',
+            'waiter_id': '3456'
+        }
+        self.send_json_req(req)
+
+    def accept_match(self):
+        req = {
+            'type': 'accept',
+            'solicitor_id': 1234
+        }
+        self.send_json_req(req)
 
     def get_current_json(self):
         current_dict = {
@@ -68,9 +94,9 @@ class OTSWebsocket:
         }
         return json.dumps(current_dict)
 
-    def send_current_json(self):
-        self.is_sending_current_json = True
-        while self.is_sending_current_json:
-            to_send = self.get_current_json()
-            self.ws.send(to_send)
-            time.sleep(0.5)
+    def loop_thread(self):
+        while True:
+            if self.game_instance.status == 'in_game':
+                to_send = self.get_current_json()
+                self.ws.send(to_send)
+            time.sleep(0.1)
