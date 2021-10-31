@@ -1,4 +1,7 @@
 from rejson import Client, Path
+from fastapi import WebSocket
+import pickle
+import threading
 
 
 def get_waiting_obj(waiting_player_id: str):  # redis 에 등록할 waiting json
@@ -24,6 +27,12 @@ class MultiplayerManager:
         self.port = redis_port
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)
         self.waiting = Client(host=self.host, port=self.port, db=1, decode_responses=True)
+        self.connections = Client(host=self.host, port=self.port, db=3)
+
+    async def get_ws(self, player_id: str) -> WebSocket:
+        pickled_con = self.connections.get(player_id)
+        unpickled_con: WebSocket = pickle.loads(pickled_con)
+        return unpickled_con
 
     async def is_waiter_exist(self, waiter_id: str) -> bool:
         if self.waiting.jsonget(waiter_id, Path.rootPath()) is None:
@@ -61,6 +70,12 @@ class MultiplayerManager:
         obj = get_session_obj(solicitor_id, waiter_id)
         match_id = await self.get_match_id(waiter_id)
         self.session.jsonset('match', Path(f'.{match_id}'), obj)
+        await self.get_ws(solicitor_id).send_json({'type': 'match_accepted',
+                                                   'match_id': f'{match_id}'})
+
+    async def send_game_data(self, data, target: str):
+        await self.get_ws(target).send_json(data)
+
 
     async def set_session(self, match_id, player1, player2):
         data = {
@@ -74,4 +89,3 @@ class MultiplayerManager:
 
     async def get_game_info(self, match_id):
         return self.session.jsonget(match_id)
-
