@@ -1,7 +1,10 @@
 from rejson import Client, Path
+from fastapi import WebSocket
+import pickle
+import threading
 
 
-def get_waiting_obj(waiting_player_id: str):
+def get_waiting_obj(waiting_player_id: str):  # redis 에 등록할 waiting json
     to_return = {
         'waiter': waiting_player_id,
         'solicitors': [],
@@ -9,7 +12,7 @@ def get_waiting_obj(waiting_player_id: str):
     return to_return
 
 
-def get_session_obj(player1: str, player2: str):
+def get_session_obj(player1: str, player2: str):  # redis 에 등록할 session json
     to_return = {
         player1: {},
         player2: {},
@@ -19,11 +22,17 @@ def get_session_obj(player1: str, player2: str):
 
 
 class MultiplayerManager:
-    def __init__(self, redis_host: str = '192.168.50.173', redis_port: int = 6379):
+    def __init__(self, redis_host: str = '192.168.50.125', redis_port: int = 6379):
         self.host = redis_host
         self.port = redis_port
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)
         self.waiting = Client(host=self.host, port=self.port, db=1, decode_responses=True)
+        self.connections = Client(host=self.host, port=self.port, db=3)
+
+    async def get_ws(self, player_id: str) -> WebSocket:
+        pickled_con = self.connections.get(player_id)
+        unpickled_con: WebSocket = pickle.loads(pickled_con)
+        return unpickled_con
 
     async def is_waiter_exist(self, waiter_id: str) -> bool:
         if self.waiting.jsonget(waiter_id, Path.rootPath()) is None:
@@ -61,3 +70,22 @@ class MultiplayerManager:
         obj = get_session_obj(solicitor_id, waiter_id)
         match_id = await self.get_match_id(waiter_id)
         self.session.jsonset('match', Path(f'.{match_id}'), obj)
+        await self.get_ws(solicitor_id).send_json({'type': 'match_accepted',
+                                                   'match_id': f'{match_id}'})
+
+    async def send_game_data(self, data, target: str):
+        await self.get_ws(target).send_json(data)
+
+
+    async def set_session(self, match_id, player1, player2):
+        data = {
+            player1: {},
+            player2: {},
+        }
+        self.session.jsonset(match_id, Path.rootPath(), data)
+
+    async def update_game_info(self, data, match_id, player_id):
+        self.session.jsonset(match_id, Path(f'.{player_id}'), data)
+
+    async def get_game_info(self, match_id):
+        return self.session.jsonget(match_id)
