@@ -5,17 +5,13 @@ import json
 import pprint
 
 
-def on_message(ws, message):
-    data = json.loads(message)
-    pprint.pp(data)
-    # parse_message(data)
 
 
 def parse_message(data):
     data_type = data.get('type')
     if data_type == 'solicitor_list':
         pass
-    elif data_type == 'game_data':
+    elif data_type == 'match_started':
         pass
 
 
@@ -27,8 +23,6 @@ def on_close(ws, close_status_code, close_msg):
     print("### closed ###")
 
 
-def on_open(ws):
-    ws.send('a1234')
 
 
 class OTSWebsocket:
@@ -39,8 +33,8 @@ class OTSWebsocket:
         self.opponent = None
         self.ws = websocket.WebSocketApp(
             f"ws://127.0.0.1:8000/ws",
-            on_open=on_open,
-            on_message=on_message,
+            on_open=lambda ws: self.on_open(ws),
+            on_message=lambda ws, msg: self.on_message(ws, msg),
             on_error=on_error,
             on_close=on_close,
         )
@@ -48,6 +42,14 @@ class OTSWebsocket:
         self.thread = threading.Thread(target=self.loop_thread, daemon=True)
         self.is_sending_current = False
         self.is_sending_current_json = False
+
+    def on_open(self, ws):
+        ws.send('a1234')
+
+    def on_message(self, ws, message):
+        data = json.loads(message)
+        pprint.pp(data)
+        # parse_message(data)
 
     def run_forever(self):
         self.is_running = True
@@ -80,23 +82,24 @@ class OTSWebsocket:
         }
         self.send_json_req(req)
 
-    def get_current_json(self):
+    def send_current_json(self):
         current_dict = {
+            'type': 'game_data',
             'id': self.user_id,
             'opponent': self.opponent,
-            'score': self.game_instance.score,
-            'level': self.game_instance.level,
-            'goal': self.game_instance.goal,
-            'matrix': self.game_instance.board.temp_matrix,
-
-            # 'next_mino': self.game_instance.next_mino,
-            # 'hold_mino': self.game_instance.hold_mino
+            'game_data': {
+                'score': self.game_instance.score,
+                'level': self.game_instance.level,
+                'goal': self.game_instance.goal,
+                'matrix': self.game_instance.board.temp_matrix,
+                # 'next_mino_index': self.game_instance.next_mino.shape_index,
+                # 'hold_mino_index': self.game_instance.hold_mino.shape_index
+            }
         }
-        return json.dumps(current_dict)
+        self.send_json_req(current_dict)
 
     def loop_thread(self):
         while True:
             if self.game_instance.status == 'in_game':
-                to_send = self.get_current_json()
-                self.ws.send(to_send)
+                self.send_current_json()
             time.sleep(0.1)
