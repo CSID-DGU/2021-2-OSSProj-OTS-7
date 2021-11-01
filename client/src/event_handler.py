@@ -33,7 +33,7 @@ class EventFuncMap:
             'hold': game_instance.ev_hold_current_mino
         }
 
-
+# 1인플레이시 키맵
 class EventKeyMap:
     def __init__(self):
         self.dict = {
@@ -46,6 +46,31 @@ class EventKeyMap:
             K_LSHIFT: 'hold'
         }
 
+
+# 로직 2인용 멀티플레이 키맵
+class DualPlayerOneEventKeyMap:
+    def __init__(self):
+        self.dict = {
+            K_s: 'down',
+            K_w: 'up',
+            K_d: 'right',
+            K_a: 'left',
+            K_g: 'hard_drop',
+            K_ESCAPE: 'pause',
+            K_h: 'hold'
+        }
+
+class DualPlayerTwoEventKeyMap:
+    def __init__(self):
+        self.dict = {
+            K_DOWN: 'down',
+            K_UP: 'up',
+            K_RIGHT: 'right',
+            K_LEFT: 'left',
+            K_l: 'hard_drop',
+            K_ESCAPE: 'pause',
+            K_SEMICOLON: 'hold'
+        }
 
 class EventHandler:
     def __init__(self, game_instance: GameInstance):
