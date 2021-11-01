@@ -43,13 +43,13 @@ class OTSWebsocket:
         self.is_sending_current_json = False
 
     def on_open(self, ws):
-        ws.send('a1234')
+        ws.send('a3456')
 
     def on_message(self, ws, message):
         data = json.loads(message)
-        data_type = data[list(data.keys())[0]].get('type')
+        data_type = data[list(data.keys())[1]].get('type')
         if data_type == 'game_data':
-            game_data = data[list(data.keys())[0]].get('game_data')
+            game_data = data[list(data.keys())[1]].get('game_data')
             self.multiplayer_instance.score = game_data.get('score')
             self.multiplayer_instance.level = game_data.get('level')
             self.multiplayer_instance.goal = game_data.get('goal')
