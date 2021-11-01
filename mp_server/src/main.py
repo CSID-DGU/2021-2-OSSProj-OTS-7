@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from typing import List
 from rejson import Client, Path
-from . import multiplayer_manager, player_request_handler
+import multiplayer_manager, player_request_handler
 
 
 class ConnectionManager:
@@ -24,7 +24,6 @@ class ConnectionManager:
 app = FastAPI()
 con_manager = ConnectionManager()
 mp_manager = multiplayer_manager.MultiplayerManager()
-active_websockets = Client(host='192.168.50.125', port=6379, db=3)
 
 
 @app.websocket("/ws")

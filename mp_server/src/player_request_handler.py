@@ -1,4 +1,4 @@
-from .multiplayer_manager import MultiplayerManager
+from multiplayer_manager import MultiplayerManager
 
 
 class PlayerConnection:

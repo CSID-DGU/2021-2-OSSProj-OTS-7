@@ -8,7 +8,7 @@ from .ot_websocket import OTSWebsocket
 
 
 class OTS:
-    def __init__(self, is_multiplayer=False):
+    def __init__(self, is_multiplayer=True):
         self.is_multiplayer = is_multiplayer  # 멀티플레이어 여부
 
         self.clock = pygame.time.Clock()  # 타이머 이벤트 발생기
@@ -21,9 +21,11 @@ class OTS:
             self.websocket_client = OTSWebsocket('a1234', self.game_instance, self.multiplayer_instance)
             # self.websocket_client.opponent = '4567'
             self.wsc_thread = threading.Thread(target=self.websocket_client.run_forever, daemon=True)
+            self.display_drawer = DisplayDrawer(self.game_instance, self.multiplayer_instance)  # 화면 업데이트 처리
+        else:
+            self.display_drawer = DisplayDrawer(self.game_instance)
 
         self.event_handler = EventHandler(self.game_instance)  # 키 입력, 타이머 등 이벤트 처리
-        self.display_drawer = DisplayDrawer(self.game_instance, self.multiplayer_instance)  # 화면 업데이트 처리
         self.pygame = pygame
 
         pygame.init()  # 파이게임 초기화
