@@ -1,11 +1,13 @@
 from multiplayer_manager import MultiplayerManager
+from fastapi import WebSocket
 
 
 class PlayerConnection:
-    def __init__(self, player_id: str, mp_manager: MultiplayerManager):
+    def __init__(self, player_id: str, mp_manager: MultiplayerManager, websocket: WebSocket):
         self.status = 'hello'
         self.player_id = player_id
         self.mpm = mp_manager
+        self.ws = websocket
 
     async def parse_request(self, data: dict):
         req_type = data.get('type')
