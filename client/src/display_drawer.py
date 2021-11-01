@@ -47,13 +47,7 @@ class DisplayDrawer:
 
     # game_instance 의 status 가 in_game 일 때 렌더링. components.draw_function.py 참조
     def draw_in_game_screen(self):
-        draw_function.draw_in_game_screen(self.game_instance.next_mino,
-                                          self.game_instance.hold_mino,
-                                          self.game_instance.score,
-                                          self.game_instance.level,
-                                          self.game_instance.goal,
-                                          self.screen,
-                                          self.game_instance.board.temp_matrix)
+        draw_function.draw_in_game_screen(self.game_instance, self.screen)
 
     # 멀티플레이어 로비.
     def draw_multiplayer_lobby(self):
