@@ -23,8 +23,6 @@ def on_close(ws, close_status_code, close_msg):
     print("### closed ###")
 
 
-
-
 class OTSWebsocket:
     def __init__(self, user_id, game_instance, multiplayer_instance):
         # websocket.enableTrace(True)
@@ -33,7 +31,7 @@ class OTSWebsocket:
         self.user_id = user_id
         self.opponent = None
         self.ws = websocket.WebSocketApp(
-            f"ws://127.0.0.1:8000/ws",
+            f"wss://ots.prvt.dev/ws",
             on_open=lambda ws: self.on_open(ws),
             on_message=lambda ws, msg: self.on_message(ws, msg),
             on_error=on_error,

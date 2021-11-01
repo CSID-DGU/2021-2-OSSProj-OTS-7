@@ -23,7 +23,7 @@ def get_session_obj(player1: str, player2: str):  # redis 에 등록할 session 
 
 
 class MultiplayerManager:
-    def __init__(self, redis_host: str = '192.168.50.125', redis_port: int = 6379):
+    def __init__(self, redis_host: str = 'rj', redis_port: int = 6379):
         self.host = redis_host
         self.port = redis_port
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)
