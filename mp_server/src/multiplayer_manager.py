@@ -84,7 +84,8 @@ class MultiplayerManager:
 
     async def update_game_info(self, data, match_id, player_id):
         try:
-            self.session.jsonset(match_id, Path(f'.{player_id}'), data)
+            data_to_put = data.get('game_data')
+            self.session.jsonset(match_id, Path(f'.{player_id}'), data_to_put)
         except redis.exceptions.ResponseError:
             await self.set_session(match_id, 'a3456', 'a1234')  # 테스트용 예외처리, 실제 서비스에선 수정 필요.
 
