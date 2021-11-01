@@ -40,7 +40,7 @@ async def recieve_data(websocket, player_instance):
         while True:
             pass
             data = await websocket.receive_json()
-            await mp_manager.update_game_info(data, 'a1234', 'a1234')
+            await mp_manager.update_game_info(data, 'a1234', player_instance.player_id)
 
             to_send = await mp_manager.get_game_info('a1234')
             # to_send = player_instance.parse_request(data=data)
