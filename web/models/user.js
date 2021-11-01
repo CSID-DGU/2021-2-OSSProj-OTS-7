@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes)=>{
     return sequelize.define('user',{
         email : {
-            type : DataTypes.STRING(30),
+            type : DataTypes.TEXT(30),
             allowNull: false,
             unique: true,
         },
