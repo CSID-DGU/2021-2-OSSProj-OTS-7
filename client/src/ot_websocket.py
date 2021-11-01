@@ -26,9 +26,10 @@ def on_close(ws, close_status_code, close_msg):
 
 
 class OTSWebsocket:
-    def __init__(self, user_id, game_instance):
+    def __init__(self, user_id, game_instance, multiplayer_instance):
         # websocket.enableTrace(True)
         self.game_instance = game_instance
+        self.multiplayer_instance = multiplayer_instance
         self.user_id = user_id
         self.opponent = None
         self.ws = websocket.WebSocketApp(
@@ -48,6 +49,13 @@ class OTSWebsocket:
 
     def on_message(self, ws, message):
         data = json.loads(message)
+        data_type = data[list(data.keys())[0]].get('type')
+        if data_type == 'game_data':
+            game_data = data[list(data.keys())[0]].get('game_data')
+            self.multiplayer_instance.score = game_data.get('score')
+            self.multiplayer_instance.level = game_data.get('level')
+            self.multiplayer_instance.goal = game_data.get('goal')
+            self.multiplayer_instance.board.temp_matrix = game_data.get('matrix')
         pprint.pp(data)
         # parse_message(data)
 

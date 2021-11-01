@@ -93,4 +93,4 @@ def draw_in_game_screen(game_instance, screen, multiplayer_instance=None):
 
     draw_game_instance(game_instance=game_instance, screen=screen)
     if multiplayer_instance is not None:
-        draw_game_instance(game_instance=multiplayer_instance, screen=screen)
+        draw_game_instance(game_instance=multiplayer_instance, screen=screen, x_mod=300)
