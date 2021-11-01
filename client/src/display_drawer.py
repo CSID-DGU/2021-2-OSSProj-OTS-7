@@ -1,22 +1,24 @@
 import pygame
 
-from client.src.components import draw_function
-from client.src.variables.ui_variables import UI_VARIABLES
+from .components import draw_function
+from .variables.ui_variables import UI_VARIABLES
 from pygame import Rect
 
 
 class DisplayDrawer:
-    def __init__(self, game_instance):
+    def __init__(self, game_instance, multiplayer_instance=None):
         self.game_instance = game_instance
         self.is_multiplayer = self.game_instance.is_multiplayer
+        if self.is_multiplayer:
+            self.multiplayer_instance = multiplayer_instance
         self.screen = self.get_screen()
 
     # 싱글플레이 멀티플레이 화면 크기
     def get_screen(self):
         if self.game_instance.is_multiplayer:
-            return pygame.display.set_mode((600, 374))
+            return pygame.display.set_mode((UI_VARIABLES.init_screen_width * 2, UI_VARIABLES.init_screen_height))
         else:
-            return pygame.display.set_mode((300, 374))
+            return pygame.display.set_mode((UI_VARIABLES.init_screen_width, UI_VARIABLES.init_screen_height))
 
     # self.game_instance.status 확인하여 디스플레이 업데이트
     def update_display(self):
@@ -35,7 +37,7 @@ class DisplayDrawer:
         pygame.draw.rect(
             self.screen,
             UI_VARIABLES.grey_1,
-            Rect(0, 187, 300, 187)
+            Rect(UI_VARIABLES.init_rect_x, UI_VARIABLES.init_rect_y, UI_VARIABLES.init_screen_width, UI_VARIABLES.init_rect_height)
         )  # 아마도 하단 검정 박스
         title = UI_VARIABLES.h1.render("PYTRIS™", 1, UI_VARIABLES.grey_1)
         title_start = UI_VARIABLES.h5.render("Press space to start", 1, UI_VARIABLES.white)
@@ -47,13 +49,10 @@ class DisplayDrawer:
 
     # game_instance 의 status 가 in_game 일 때 렌더링. components.draw_function.py 참조
     def draw_in_game_screen(self):
-        draw_function.draw_in_game_screen(self.game_instance.next_mino,
-                                          self.game_instance.hold_mino,
-                                          self.game_instance.score,
-                                          self.game_instance.level,
-                                          self.game_instance.goal,
-                                          self.screen,
-                                          self.game_instance.board.temp_matrix)
+        if self.is_multiplayer:
+            draw_function.draw_in_game_screen(self.game_instance, self.screen, self.multiplayer_instance)
+        else:
+            draw_function.draw_in_game_screen(self.game_instance, self.screen)
 
     # 멀티플레이어 로비.
     def draw_multiplayer_lobby(self):

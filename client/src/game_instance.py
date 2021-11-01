@@ -1,7 +1,10 @@
-from client.src.components.board import Board
+import pygame
+
+from .components.board import Board
 import copy
 from random import randint
-from client.src.components.mino import Mino
+from .components.mino import Mino
+from .variables.ui_variables import UI_VARIABLES
 
 
 def new_mino():
@@ -149,11 +152,12 @@ class GameInstance:
     def ev_rotate_right(self):
         mod_list = [0, -1, 1, -2, 2]
         for mod in mod_list:
-            if self.is_rotatable(self.x + mod, self.y, 'r'):
-                self.rotate(x_mod=mod, right_or_left='r')
-            elif self.is_rotatable(self.x, self.y + mod, 'r'):
+            if self.is_rotatable(self.x, self.y + mod, 'r'):
                 self.rotate(y_mod=mod, right_or_left='r')
-            break
+                break
+            elif self.is_rotatable(self.x + mod, self.y, 'r'):
+                self.rotate(x_mod=mod, right_or_left='r')
+                break
 
     def ev_rotate_left(self):
         pass
@@ -163,7 +167,7 @@ class GameInstance:
             self.move(self.hold_current_mino)
 
     def ev_pause_game(self):
-        if self.status != 'pause':
+        if self.status == 'in_game':
             self.status = 'pause'
         elif self.status == 'pause':
             self.status = 'in_game'
@@ -305,6 +309,11 @@ class GameInstance:
                     # update current mino
                     matrix[self.x + j][self.y + i] = grid[i][j]
         return matrix
+
+    def play_bgm(self):
+        self.bgm = UI_VARIABLES.bgm_list[self.level-1]
+        pygame.mixer.music.load(self.bgm)
+        pygame.mixer.music.play()
 
     # 게임 오버시
     def on_game_over(self):

@@ -1,5 +1,5 @@
-from client.src.components.mino_shape import mino_map
-from client.src.variables.ui_variables import UI_VARIABLES
+from .mino_shape import mino_map
+from ..variables.ui_variables import UI_VARIABLES
 
 
 class Mino:
