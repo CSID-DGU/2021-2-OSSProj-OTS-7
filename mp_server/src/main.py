@@ -1,10 +1,7 @@
-import asyncio
-
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from typing import List
 from rejson import Client, Path
-from mp_server.src import multiplayer_manager, player_request_handler
-import pickle
+from . import multiplayer_manager, player_request_handler
 
 
 class ConnectionManager:
@@ -28,15 +25,6 @@ app = FastAPI()
 con_manager = ConnectionManager()
 mp_manager = multiplayer_manager.MultiplayerManager()
 active_websockets = Client(host='192.168.50.125', port=6379, db=3)
-
-
-async def pickle_connection(websocket):
-    return pickle.dumps(websocket)
-
-
-async def set_connection_to_redis(player_id, websocket):
-    pickled_connection = await pickle_connection(websocket)
-    active_websockets.set(player_id, pickled_connection)
 
 
 @app.websocket("/ws")
