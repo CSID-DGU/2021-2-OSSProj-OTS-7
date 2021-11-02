@@ -1,20 +1,20 @@
 module.exports = (sequelize, DataTypes)=>{
     return sequelize.define('user',{
         email : {
-            type : DataTypes.TEXT(30),
-            allowNull: false,
-            unique: true,
+            type : DataTypes.TEXT,
+            allowNull: false
+//             unique: true,
         },
         password : {
-            type : DataTypes.STRING(100),
+            type : DataTypes.TEXT,
             allowNull: false,
         },
         name : {
-            type : DataTypes.STRING(15),
+            type : DataTypes.TEXT,
             allowNull : false,
         },
         salt : {
-            type : DataTypes.STRING(100),
+            type : DataTypes.TEXT,
             allowNull : false
         },
         verified : {
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes)=>{
             defaultValue : true
         },
         userType : {
-            type : DataTypes.STRING(10),
+            type : DataTypes.TEXT,
             allowNull : false,
         }
     },{

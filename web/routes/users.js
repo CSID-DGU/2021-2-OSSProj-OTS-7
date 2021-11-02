@@ -11,19 +11,22 @@ router.post('/login', async(req, res, next) => {
         .then((doc) => createHash(password, doc.salt)) // password hash
         .then((hashedPassword) => findUser(email, hashedPassword)) // User DB에서 사용자 검색
         .then((user) => {
+        console.log()
             if (user == null) {
                 res.json({msg: "failed"}); //회원정보 없음
                 return;
+            }else{
+            res.json({msg: "success"}); // 회원정보 존재
+            return;
             }
             let accessToken = jwt.sign({email, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
                 process.env.JWT_SECRET_ACCESS, {expiresIn: '30m'});
-            /*
+
             let refreshToken = jwt.sign({email, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
                 process.env.JWT_SECRET_REFRESH, {expiresIn: '60m'});
-            
+
             req.cache.set(email, refreshToken);
             req.expire(email, 60 * 10);
-            */
             return accessToken
         })
         .then(token => { // save access_token in redis
@@ -67,7 +70,7 @@ function findUser(email, password) {
 
 function findSalt (email) {
     return new Promise((resolve, reject) => {
-        User.findOne({where: {email}})
+        User.findOne({where: {email : email}})
             .then(result => {
                 resolve(result);
             })
