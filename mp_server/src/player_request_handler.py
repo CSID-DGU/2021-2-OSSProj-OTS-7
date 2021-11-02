@@ -14,22 +14,22 @@ class PlayerConnection:
         opponent_id = data.get('opponent')
         game_data = data.get('game_data')
         if req_type == 'game_data':
-            await self.mpm.send_game_data(game_data, opponent_id)
+            await self.mpm.game_data_send(game_data, opponent_id)
         elif req_type == 'add_to_waiting':
             self.status = 'waiting'
-            await self.mpm.add_to_waiting_list(player_id=self.player_id)
+            await self.mpm.waiting_list_add(player_id=self.player_id)
         elif req_type == 'quit_waiting':
             self.status = 'hello'
-            await self.mpm.remove_from_waiting_list(player_id=self.player_id)
+            await self.mpm.waiting_list_remove(player_id=self.player_id)
         elif req_type == 'solicit':
             if waiter_id is not None:
                 self.status = 'soliciting'
-                await self.mpm.solicit(solicitor_id=self.player_id, waiter_id=waiter_id)
+                await self.mpm.solicitor_set(solicitor_id=self.player_id, waiter_id=waiter_id)
         elif req_type == 'get_solicitors':
-            solicitors = await self.mpm.get_solicitors(waiter_id=self.player_id)
+            solicitors = await self.mpm.solicitor_get(waiter_id=self.player_id)
             return solicitors
         elif req_type == 'accept':
             self.status = 'match_accepted'
-            await self.mpm.accept_match(solicitor_id=solicitor_id, waiter_id=self.player_id)
+            await self.mpm.match_accept(solicitor_id=solicitor_id, waiter_id=self.player_id)
 
 
