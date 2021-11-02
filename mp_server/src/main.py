@@ -1,28 +1,19 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks
 from typing import List
 from .multiplayer_manager import MultiplayerManager
-from .player_request_handler import PlayerConnection
+from .player_connection import PlayerConnection
 from collections import deque
-import threading
+import threading, asyncio
 import json
 
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: List[WebSocket] = []
         self.active_connection_dict = {}
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket, player_id: str):
-        self.active_connections.remove(websocket)
+    def disconnect(self, player_id: str):
+        self.active_connection_dict[player_id].ws.close()
         self.active_connection_dict.pop(player_id)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
 
 
 app = FastAPI()
@@ -36,9 +27,8 @@ players_on_this_worker = {}
 async def on_startup():
     ml = threading.Thread(target=message_listen, daemon=True)
     ml.start()  # 메시지 리스너 스레드 시작
-    mp = threading.Thread(target=message_parse, daemon=True)
+    mp = threading.Thread(target=message_process, daemon=True)
     mp.start()  # 메시지 파서 스레드 시작
-
 
 # redis 에서 받은 메시지를 큐에 넣음.
 def message_listen():
@@ -55,34 +45,60 @@ def message_queue_gen():
 
 
 # 큐에서 메시지를 꺼내서 작업 진행
-def message_parse():
+async def say_hi(asd):
+    print('hi'+asd)
+
+
+def message_process():
+    loop = asyncio.new_event_loop()
     for msg in message_queue_gen():
-        print(msg)
-        data = msg.get('data')
-        todo = msg.get('t')  # to do
-        receiver = msg.get('r')  # receiver
-        if data is not None and receiver in con_manager.active_connection_dict.keys():
-            player_connection: PlayerConnection = con_manager.active_connection_dict[receiver].ws
-            if todo == 'gd':  # game data send
-                pass
-            elif todo == 'go':  # game over signal send
-                pass
-            elif todo == 'gs':  # game start signal send
-                pass
-            elif todo == 'su':  # solicitor updated send
-                pass
-            elif todo == 'sa':  # solicit accepted send
-                pass
-            elif todo == 'sr':  # solicit rejected send
-                pass
-            elif todo == '':
-                pass
+        loop.run_until_complete(message_execute(msg))
+
+
+async def message_execute(msg):
+    todo = None
+    msg_type = msg.get('type')
+    data = json.loads(msg.get('data'))
+
+    channel = msg.get('channel')
+    print(msg)
+    if msg_type == 'message':
+        try:
+            todo = data.get('t')
+        except AttributeError:
+            pass
+
+    receiver = con_manager.active_connection_dict.get(channel)
+    if receiver is not None:
+        pc: PlayerConnection = con_manager.active_connection_dict[receiver]
+        if todo == 'gd':  # game data send
+            await pc.send_game_info()
+        elif todo == 'go':  # game over(opponent) signal send
+            await pc.send_event('opponent_game_over')
+        elif todo == 'ms':  # match set signal
+            await pc.send_event('match_set')
+        elif todo == 'mc':  # match complete signal
+            await pc.send_event('match_complete')
+        elif todo == 'gs':  # game start signal send
+            await pc.send_event('game_start')
+        elif todo == 'ss':  # solicitor updated send
+            await pc.send_solicitors()
+        elif todo == 'sa':  # solicit accepted send
+            await pc.send_event('solicit_accepted')
+        elif todo == 'sr':  # solicit rejected send
+            await pc.send_event('solicit_rejected')
+        elif todo == 'lo':  # loser signal send
+            await pc.send_event('loser')
+        elif todo == 'wi':  # winner signal send
+            await pc.send_event('winner')
 
 
 @app.websocket("/ws")
 async def websocket_connection(websocket: WebSocket):
-    await con_manager.connect(websocket)
-    player_id = await websocket.receive_text()  # 처음 받는 텍스트를 플레이어 아이디로 처리, 추후 jwt 인증 로직 넣을 예정
+    await websocket.accept()
+    player_id = str(await websocket.receive_text())  # 처음 받는 텍스트를 플레이어 아이디로 처리, 추후 jwt 인증 로직 넣을 예정
+    mp_manager.redis_pup_sub.subscribe(player_id)  # redis player_id 채널 구독
+
     player_connection = PlayerConnection(player_id=player_id, mp_manager=mp_manager, websocket=websocket)
     con_manager.active_connection_dict[player_id] = player_connection  # connection manager 객체의 active connection dict 에 {player_id : player_connection} 추가
 
@@ -96,6 +112,6 @@ async def receive_data(websocket, player_connection):
             player_connection.parse_request(data=data)
 
     except WebSocketDisconnect:
-        player_connection.ws.close()
+        mp_manager.redis_pup_sub.unsubscribe(player_connection.player_id)
         con_manager.active_connection_dict.pop(player_connection.player_id)
         # 연결 끊겼을 때 필요한 조치
