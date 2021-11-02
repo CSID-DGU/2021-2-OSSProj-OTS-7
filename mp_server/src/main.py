@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from typing import List
-from multiplayer_manager import MultiplayerManager
-from player_request_handler import PlayerConnection
+from .multiplayer_manager import MultiplayerManager
+from .player_request_handler import PlayerConnection
 from collections import deque
 import threading
 import json
@@ -33,49 +33,56 @@ players_on_this_worker = {}
 
 
 @app.on_event('startup')
-async def on_startup():  # 프로세스 생성시 redis 메시지 채널 구독, 이후 while 문으로 메시지 전달 받아서 명령 실행
+async def on_startup():
     ml = threading.Thread(target=message_listen, daemon=True)
-    ml.start()  # 메시지 리스너 스레드 시작, fastapi 에서 스레드 동작 되는지 확인 필요
-    while True:
-        if message_queue:
-            message = message_queue.popleft()
-            await message_parse(message=message)
-
-
-# 큐에서 메시지를 꺼내서 작업 진행
-async def message_parse(message):
-    data: dict = json.loads(message)
-    todo = data.get('t')  # to do
-    receiver = data.get('r')  # receiver
-    if receiver in con_manager.active_connection_dict.keys():
-        player_connection: PlayerConnection = con_manager.active_connection_dict[receiver].ws
-        if todo == 'gd':  # game data send
-            pass
-        elif todo == 'go':  # game over signal send
-            pass
-        elif todo == 'gs':  # game start signal send
-            pass
-        elif todo == 'su':  # solicitor updated send
-            pass
-        elif todo == 'sa':  # solicit accepted send
-            pass
-        elif todo == 'sr':  # solicit rejected send
-            pass
-        elif todo == '':
-            pass
+    ml.start()  # 메시지 리스너 스레드 시작
+    mp = threading.Thread(target=message_parse, daemon=True)
+    mp.start()  # 메시지 파서 스레드 시작
 
 
 # redis 에서 받은 메시지를 큐에 넣음.
 def message_listen():
+    for msg in mp_manager.redis_pup_sub.listen():
+        if msg.get('type') == 'message':
+            message_queue.append(msg)
+
+
+# 메시지 큐 제너레이터
+def message_queue_gen():
     while True:
-        message = mp_manager.redis_pup_sub.get_message()
-        message_queue.append(message)
+        if message_queue:
+            yield message_queue.popleft()
+
+
+# 큐에서 메시지를 꺼내서 작업 진행
+def message_parse():
+    for msg in message_queue_gen():
+        print(msg)
+        data = msg.get('data')
+        todo = msg.get('t')  # to do
+        receiver = msg.get('r')  # receiver
+        if data is not None and receiver in con_manager.active_connection_dict.keys():
+            player_connection: PlayerConnection = con_manager.active_connection_dict[receiver].ws
+            if todo == 'gd':  # game data send
+                pass
+            elif todo == 'go':  # game over signal send
+                pass
+            elif todo == 'gs':  # game start signal send
+                pass
+            elif todo == 'su':  # solicitor updated send
+                pass
+            elif todo == 'sa':  # solicit accepted send
+                pass
+            elif todo == 'sr':  # solicit rejected send
+                pass
+            elif todo == '':
+                pass
 
 
 @app.websocket("/ws")
 async def websocket_connection(websocket: WebSocket):
     await con_manager.connect(websocket)
-    player_id = await websocket.receive_text()
+    player_id = await websocket.receive_text()  # 처음 받는 텍스트를 플레이어 아이디로 처리, 추후 jwt 인증 로직 넣을 예정
     player_connection = PlayerConnection(player_id=player_id, mp_manager=mp_manager, websocket=websocket)
     con_manager.active_connection_dict[player_id] = player_connection  # connection manager 객체의 active connection dict 에 {player_id : player_connection} 추가
 

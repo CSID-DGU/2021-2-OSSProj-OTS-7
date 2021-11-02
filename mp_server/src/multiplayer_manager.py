@@ -21,23 +21,21 @@ def get_session_obj(player1: str, player2: str):  # redis 에 등록할 session 
 
 class MultiplayerManager:
     # redis_host 는 ip 주소나 도메인 이름. rj 는 도커 네트워크 상에서의 이름. 도커 네트워크 안에서는 이름으로 호출 가능
-    def __init__(self, redis_host: str = 'rj', redis_port: int = 6379):
+    def __init__(self, redis_host: str = '192.168.50.125', redis_port: int = 6379):
         self.host = redis_host
         self.port = redis_port
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)  # 게임 세션 데이터 저장
         self.waiting = Client(host=self.host, port=self.port, db=1, decode_responses=True)  # 게임 대기열
-        self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=True)  # 메시지 브로커
+        self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=False)  # 메시지 브로커
         self.redis_pup_sub = self.msg_broker.pubsub()  # 메시지 브로커 pub_sub
 
         self.initial_subscribe()  # 메시지 채널 구독
 
     # 레디스 메시지 채널 구독
     def initial_subscribe(self):
-        to_subscribe = ['waiting', 'game_data']
-        channels = self.msg_broker.pubsub_channels()
-        for ch in to_subscribe:
-            if ch not in channels:
-                self.msg_broker.publish(channel=ch, message='hello!')
+        to_subscribe = []
+        self.redis_pup_sub.subscribe(to_subscribe)
+        self.redis_pup_sub.unsubscribe('afsef')
 
     def is_waiter_exist(self, waiter_id: str) -> bool:
         if self.waiting.jsonget(waiter_id, Path.rootPath()) is None:
