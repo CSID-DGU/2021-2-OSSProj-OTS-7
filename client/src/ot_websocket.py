@@ -43,17 +43,15 @@ class OTSWebsocket:
         self.is_sending_current_json = False
 
     def on_open(self, ws):
-        ws.send('a1234')
+        ws.send(self.user_id)
 
     def on_message(self, ws, message):
-        data = json.loads(message)
-        data_type = data[list(data.keys())[0]].get('type')
-        if data_type == 'game_data':
-            game_data = data[list(data.keys())[0]].get('game_data')
-            self.multiplayer_instance.score = game_data.get('score')
-            self.multiplayer_instance.level = game_data.get('level')
-            self.multiplayer_instance.goal = game_data.get('goal')
-            self.multiplayer_instance.board.temp_matrix = game_data.get('matrix')
+        raw_data = json.loads(message)  # 최상위 키가 하나 존재하는 딕셔너리 데이터
+        data = raw_data[list(raw_data.keys())[0]]  # 데이터의 첫번째 키
+        self.multiplayer_instance.score = data.get('score')
+        self.multiplayer_instance.level = data.get('level')
+        self.multiplayer_instance.goal = data.get('goal')
+        self.multiplayer_instance.board.temp_matrix = data.get('matrix')
         pprint.pp(data)
         # parse_message(data)
 
