@@ -8,14 +8,12 @@ from pygame import Rect
 class DisplayDrawer:
     def __init__(self, game_instance, multiplayer_instance=None):
         self.game_instance = game_instance
-        self.is_multiplayer = self.game_instance.is_multiplayer
-        if self.is_multiplayer:
-            self.multiplayer_instance = multiplayer_instance
+        self.multiplayer_instance = multiplayer_instance
         self.screen = self.get_screen()
 
     # 싱글플레이 멀티플레이 화면 크기
     def get_screen(self):
-        if self.game_instance.is_multiplayer:
+        if self.multiplayer_instance is not None:
             return pygame.display.set_mode((UI_VARIABLES.init_screen_width * 2, UI_VARIABLES.init_screen_height))
         else:
             return pygame.display.set_mode((UI_VARIABLES.init_screen_width, UI_VARIABLES.init_screen_height))
@@ -49,7 +47,7 @@ class DisplayDrawer:
 
     # game_instance 의 status 가 in_game 일 때 렌더링. components.draw_function.py 참조
     def draw_in_game_screen(self):
-        if self.is_multiplayer:
+        if self.multiplayer_instance is not None:
             draw_function.draw_in_game_screen(self.game_instance, self.screen, self.multiplayer_instance)
         else:
             draw_function.draw_in_game_screen(self.game_instance, self.screen)
