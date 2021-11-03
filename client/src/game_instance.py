@@ -4,6 +4,7 @@ from .components.board import Board
 import copy
 from random import randint
 from .components.mino import Mino
+from .display_drawer import DisplayDrawer
 from .variables.ui_variables import UI_VARIABLES
 
 
@@ -17,6 +18,8 @@ class GameInstance:
 
         self.is_multiplayer = is_multiplayer  # 멀티플레이어 여부
 
+        self.item_list = ["bomb","clock"]
+        self.my_item = ""
         self.score = 0
         self.level = 1
         self.goal = self.level * 5
@@ -286,6 +289,9 @@ class GameInstance:
         if self.goal < 0:
             self.level += 1
             self.goal += self.level * 5
+            self.my_item = self.item_list[randint(0,2)]
+            print(self.my_item)
+    #         TODO: : my_item blit 띄우기
 
     def change_to_next_mino(self):
         self.x = 3
@@ -315,6 +321,26 @@ class GameInstance:
         pygame.mixer.music.load(self.bgm)
         pygame.mixer.music.play()
 
+    def use_item(self):
+        # 아이템 이미지 기본 추가를 해야하는데 blit으로 추가를 해봤더니 전체적인 우쪽에 그냥 한칸씩 내려가네요
+        if self.my_item == "bomb":
+            k = 20
+            while k > 0:
+                for i in range(10):
+                    self.board.temp_matrix[i][k] = self.board.temp_matrix[i][k - 1]
+                k -= 1
+            if self.goal > 0 :
+                self.goal -= 1
+            else:
+                self.level +=1
+                self.goal = self.level * 5
+                self.my_item = self.item_list[randint(0,2)]
+                print(self.my_item)
+        #     화면이 업데이트 되지않음 --> 그대로 맨위에부터 한줄씩 내리면 되는것이 아닌지 --> 좌표 가 애초 다른군
+        elif self.my_item == "clock":
+            for i in range(5):
+                self.move_down_count = int(self.move_down_count * 2)
+    #       우쪽에 MOVE다운 메서드가 레벨을 참고해서 불러오기때문에 한번만 발동해서는 효과가 없습니다 더하기 해당 방법으로 적용해봤습니다
     # 게임 오버시
     def on_game_over(self):
         self.reset()

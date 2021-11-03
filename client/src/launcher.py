@@ -1,5 +1,8 @@
 from .main import OTS
 from tkinter import *
+import webbrowser
+from PIL import Image
+from .variables.ui_variables import UI_VARIABLES as uv
 
 
 class Launcher:
@@ -21,6 +24,12 @@ class Launcher:
         self.online_btn = Button(text='Online Play', width=15, command=self.on_online_btn,)
         self.online_btn.pack()
 
+        self.signup_btn = Button(text='Sign Up', width=15, command=self.signup_btn,)
+        self.signup_btn.pack()
+
+        self.help_btn = Button(text='Help', width=15, command=self.help_btn,)
+        self.help_btn.pack()
+
     def run_launcher(self):
         self.tk.mainloop()
 
@@ -35,6 +44,13 @@ class Launcher:
     def on_online_btn(self):
         self.game_mode = 'online'
         self.run_game()
+
+    def signup_btn(self):
+        webbrowser.open("https://otsauth.loca.lt/")
+
+    def help_btn(self):
+        image = Image.open(uv.help_image)
+        image.show()
 
     def run_game(self):
         self.tk.destroy()
