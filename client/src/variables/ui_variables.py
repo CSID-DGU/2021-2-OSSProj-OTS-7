@@ -61,4 +61,8 @@ class UI_VARIABLES:
 
     t_color = [grey_2, cyan, blue, orange, yellow, green, pink, red, grey_3]
 
-    background_music_ = ("../../assets/")
+    # images
+
+    bomb_image = "./assets/img/bomb.png"
+    clock_image = "./assets/img/clock.png"
+    help_image = "./assets/img/help.png"
