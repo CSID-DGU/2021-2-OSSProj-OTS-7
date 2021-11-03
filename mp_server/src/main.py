@@ -1,9 +1,9 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks
-from typing import List
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .multiplayer_manager import MultiplayerManager
 from .player_connection import PlayerConnection
 from collections import deque
-import threading, asyncio
+import threading
+import asyncio
 import json
 
 
@@ -12,8 +12,8 @@ class ConnectionManager:
         self.active_connection_dict = {}
 
     def disconnect(self, player_id: str):
-        self.active_connection_dict[player_id].ws.close()
-        self.active_connection_dict.pop(player_id)
+        self.active_connection_dict[player_id].ws.close()  # 소켓 닫음
+        self.active_connection_dict.pop(player_id)  # 딕셔너리 pop
 
 
 app = FastAPI()
@@ -30,7 +30,8 @@ async def on_startup():
     mp = threading.Thread(target=message_process, daemon=True)
     mp.start()  # 메시지 파서 스레드 시작
 
-# redis 에서 받은 메시지를 큐에 넣음.
+
+# redis 에서 받은 메시지를 큐에 넣음. 스레드로 사용할것
 def message_listen():
     for msg in mp_manager.redis_pup_sub.listen():
         if msg.get('type') == 'message':
@@ -44,53 +45,52 @@ def message_queue_gen():
             yield message_queue.popleft()
 
 
-# 큐에서 메시지를 꺼내서 작업 진행
-async def say_hi(asd):
-    print('hi'+asd)
-
-
+# 큐에서 메시지를 꺼내서 작업 진행. 스레드로 사용할것
 def message_process():
     loop = asyncio.new_event_loop()
     for msg in message_queue_gen():
         loop.run_until_complete(message_execute(msg))
 
 
+msg_code_map = {
+    b'go': 'opponent_game_over',
+    b'ms': 'match_set',
+    b'mc': 'match_complete',
+    b'gs': 'game_start',
+    b'sa': 'solicit_accepted',
+    b'sr': 'solicit_rejected',
+    b'lo': 'loser',
+    b'wi': 'winner'
+}
+
+
+# 메시지 명령 실행
 async def message_execute(msg):
-    todo = None
     msg_type = msg.get('type')
-    data = json.loads(msg.get('data'))
+    channel = msg.get('channel')  # user_id 가 채널
+    try:
+        pc: PlayerConnection = con_manager.active_connection_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
+    except KeyError:
+        print('player connection object does not exist')
+        pc = None
 
-    channel = msg.get('channel')
     print(msg)
-    if msg_type == 'message':
-        try:
-            todo = data.get('t')
-        except AttributeError:
-            pass
+    print(msg.get('data'))
 
-    receiver = con_manager.active_connection_dict.get(channel)
-    if receiver is not None:
-        pc: PlayerConnection = con_manager.active_connection_dict[receiver]
-        if todo == 'gd':  # game data send
-            await pc.send_game_info()
-        elif todo == 'go':  # game over(opponent) signal send
-            await pc.send_event('opponent_game_over')
-        elif todo == 'ms':  # match set signal
-            await pc.send_event('match_set')
-        elif todo == 'mc':  # match complete signal
-            await pc.send_event('match_complete')
-        elif todo == 'gs':  # game start signal send
-            await pc.send_event('game_start')
-        elif todo == 'ss':  # solicitor updated send
-            await pc.send_solicitors()
-        elif todo == 'sa':  # solicit accepted send
-            await pc.send_event('solicit_accepted')
-        elif todo == 'sr':  # solicit rejected send
-            await pc.send_event('solicit_rejected')
-        elif todo == 'lo':  # loser signal send
-            await pc.send_event('loser')
-        elif todo == 'wi':  # winner signal send
-            await pc.send_event('winner')
+    if pc is not None and msg_type == 'message':
+        msg_code = msg.get('data')  # 명령 코드
+
+        if msg_code == b'gd':
+            await pc.send_game_info()  # 현재 게임 상황 전송
+        elif msg_code == b'ss':
+            await pc.send_solicitors()  # 현재 solicitor 목록 전송
+        else:
+            val = msg_code_map.get(msg_code)
+            if val is not None:
+                # await pc.send_event(val)
+                print(val)
+            else:
+                print('invalid code')
 
 
 @app.websocket("/ws")
@@ -109,7 +109,7 @@ async def receive_data(websocket, player_connection):
     try:
         while True:
             data = await websocket.receive_json()
-            player_connection.parse_request(data=data)
+            await player_connection.parse_request(data=data)
 
     except WebSocketDisconnect:
         mp_manager.redis_pup_sub.unsubscribe(player_connection.player_id)
