@@ -15,6 +15,7 @@ class EventFlags:
             'hard_drop': False,
             'pause': False,
             'hold': False,
+            'use_item': False
         }
 
     def reset(self):
@@ -30,7 +31,8 @@ class EventFuncMap:
             'left': game_instance.ev_move_left,
             'hard_drop': game_instance.hard_drop,
             'pause': game_instance.ev_pause_game,
-            'hold': game_instance.ev_hold_current_mino
+            'hold': game_instance.ev_hold_current_mino,
+            'use_item': game_instance.use_item,
         }
 
 # 1인플레이시 키맵
@@ -43,7 +45,8 @@ class EventKeyMap:
             K_LEFT: 'left',
             K_SPACE: 'hard_drop',
             K_ESCAPE: 'pause',
-            K_LSHIFT: 'hold'
+            K_LSHIFT: 'hold',
+            K_LCTRL: 'use_item'
         }
 
 
@@ -55,9 +58,10 @@ class DualPlayerOneEventKeyMap:
             K_w: 'up',
             K_d: 'right',
             K_a: 'left',
-            K_g: 'hard_drop',
             K_ESCAPE: 'pause',
-            K_h: 'hold'
+            K_f: 'hard_drop',
+            K_g: 'hold',
+            K_h: 'use_item'
         }
 
 class DualPlayerTwoEventKeyMap:
@@ -67,9 +71,10 @@ class DualPlayerTwoEventKeyMap:
             K_UP: 'up',
             K_RIGHT: 'right',
             K_LEFT: 'left',
-            K_l: 'hard_drop',
             K_ESCAPE: 'pause',
-            K_SEMICOLON: 'hold'
+            K_LESS: 'hard_drop',
+            K_GREATER: 'hold',
+            K_SLASH: 'use_item'
         }
 
 class EventHandler:
