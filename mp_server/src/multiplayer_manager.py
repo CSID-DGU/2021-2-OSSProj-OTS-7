@@ -28,7 +28,7 @@ class MultiplayerManager:
         self.port = redis_port
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)  # 게임 세션 데이터 저장
         self.waiting = Client(host=self.host, port=self.port, db=1, decode_responses=True)  # 게임 대기열
-        self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=True)  # 메시지 브로커
+        self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=False)  # 메시지 브로커
         self.redis_pup_sub = self.msg_broker.pubsub()  # 메시지 브로커 pub_sub
 
         self.initial_subscribe()  # 메시지 채널 구독
@@ -61,7 +61,7 @@ class MultiplayerManager:
         solicitors = await self.solicitor_get(waiter_id=waiter_id)
         if solicitor_id not in solicitors:
             self.waiting.jsonarrappend(solicitor_id)
-            self.msg_broker.publish(waiter_id, '{"todo": "su"}')
+            self.msg_broker.publish(waiter_id, 'su')
 
     async def match_id_set(self, player1: str, player2: str):
         self.session.jsonset('opponent', Path(f'.{player1}'), player2)
@@ -78,11 +78,11 @@ class MultiplayerManager:
         self.waiting.jsondel(waiter_id)
         await self.match_id_set(solicitor_id, waiter_id)
         await self.game_session_set(match_id=waiter_id, player1=solicitor_id, player2=waiter_id)
-        self.msg_broker.publish(solicitor_id, '{"todo": "sa"}')
-        self.msg_broker.publish(waiter_id, '{"todo": "sa"}')
+        self.msg_broker.publish(solicitor_id, 'sa')
+        self.msg_broker.publish(waiter_id, 'sa')
         time.sleep(3)
-        self.msg_broker.publish(solicitor_id, '{"todo": "gs"}')
-        self.msg_broker.publish(waiter_id, '{"todo": "gs"}')
+        self.msg_broker.publish(solicitor_id, 'gs')
+        self.msg_broker.publish(waiter_id, 'gs')
 
     async def game_session_set(self, match_id, player1, player2):  # 게임 세션 생성
         data = {
