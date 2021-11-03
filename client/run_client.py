@@ -1,5 +1,5 @@
-from src.main import OTS
+from src.launcher import Launcher
 
-gs = OTS()
-if __name__ == "__main__":
-    gs.run_game()
+if __name__ == '__main__':
+    lc = Launcher()
+    lc.run_launcher()
