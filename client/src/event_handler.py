@@ -157,4 +157,4 @@ class EventHandler:
     # 타이머 이벤트
     def on_timer_event(self):
         if self.game_instance.status == 'in_game':
-            self.game_instance.count_move_down()
+            self.game_instance.ev_timer_event()

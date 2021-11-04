@@ -1,15 +1,8 @@
-import random
-import time
-import threading
-
-import pygame
 from collections import deque
 from .components.board import Board
 import copy
-from random import randint
+from random import randint, choice
 from .components.mino import Mino
-from .display_drawer import DisplayDrawer
-from .variables.ui_variables import UI_VARIABLES
 
 
 def new_mino():
@@ -23,8 +16,9 @@ class GameInstance:
         self.is_multiplayer = is_multiplayer  # 멀티플레이어 여부
 
         self.item_list = ["bomb", "clock"]  # 가능한 아이템 종류
-        self.my_item_list = deque(['clock', 'clock'])  # 아이템 보유 리스트, popleft 로 선입선출 사용
+        self.my_item_list = deque([])  # 아이템 보유 리스트, popleft 로 선입선출 사용
         self.clock_used = False  # 클락 아이템 사용 여부
+        self.clock_count = 300  # 30초
 
         self.score = 0
         self.level = 1
@@ -137,6 +131,10 @@ class GameInstance:
         self.hard_drop()
         self.is_hard_dropped = True
 
+    def ev_timer_event(self):
+        self.count_move_down()
+        self.count_item_clock()
+
     def ev_move_down(self):
         if not self.is_bottom_collide(self.x, self.y):
             self.move(self.move_down)
@@ -247,7 +245,6 @@ class GameInstance:
     def rotate_left(self):
         self.rotation = self.get_rotation(-1)
 
-
     # freeze 후, 라인 완성됐는지 확인, 제거.
     def check_lines(self):
         line_count = 0
@@ -309,7 +306,7 @@ class GameInstance:
         if self.goal < 0:
             self.level += 1
             self.goal += self.level * 5
-            self.my_item_list.append(random.choice(self.item_list))
+            self.my_item_list.append(choice(self.item_list))  # random.choice
             print(self.my_item_list)
 
     #         TODO: : my_item blit 띄우기
@@ -359,19 +356,17 @@ class GameInstance:
         self.erase_line(20)  # 맨 아랫줄 제거, 화면 업데이트는 self.move() 래퍼 안에서 돌리면 해결됩니다. ev_use_item() 메소드에 넣었습니다.
 
     def item_clock(self):
-        if self.clock_used:  # 이미 사용한 상태에서 사용할 경우 없애버릴지 사용을 못하게할지
-            print('already used')
-            self.my_item_list.appendleft('clock')
+        if self.clock_used:
+            print('already_used')
         else:
-            ct = threading.Thread(target=self.clock_use, daemon=True)
-            ct.start()
+            self.clock_used = True
 
-    def clock_use(self):
-        self.clock_used = True
-        print('slow started')
-        time.sleep(30)  # 30초
-        self.clock_used = False
-        print('slow finished')
+    def count_item_clock(self):
+        if self.clock_used and self.clock_count > 0:
+            self.clock_count -= 1
+        elif self.clock_count <= 0:
+            self.clock_used = False
+            self.clock_count = 30
 
     # 게임 오버시
     def on_game_over(self):
