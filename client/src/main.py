@@ -42,7 +42,7 @@ class OTS:
         self.main_loop()
 
     def main_loop(self):
-        self.game_instance.play_bgm()
+        # self.game_instance.play_bgm()
         while self.running:
             # 이벤트 처리
             for event in pygame.event.get():
