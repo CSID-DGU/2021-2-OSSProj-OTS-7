@@ -10,13 +10,14 @@ class DisplayDrawer:
         self.game_instance = game_instance
         self.multiplayer_instance = multiplayer_instance
         self.screen = self.get_screen()
+        self.fake_screen = self.screen.copy()
 
     # 싱글플레이 멀티플레이 화면 크기
     def get_screen(self):
         if self.multiplayer_instance is not None:
-            return pygame.display.set_mode((UI_VARIABLES.init_screen_width * 2, UI_VARIABLES.init_screen_height))
+            return pygame.display.set_mode((UI_VARIABLES.init_screen_width * 2, UI_VARIABLES.init_screen_height), pygame.RESIZABLE | pygame.HWSURFACE | pygame.DOUBLEBUF| pygame.SCALED)
         else:
-            return pygame.display.set_mode((UI_VARIABLES.init_screen_width, UI_VARIABLES.init_screen_height))
+            return pygame.display.set_mode((UI_VARIABLES.init_screen_width, UI_VARIABLES.init_screen_height), pygame.RESIZABLE | pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.SCALED)
 
     # self.game_instance.status 확인하여 디스플레이 업데이트
     def update_display(self):
