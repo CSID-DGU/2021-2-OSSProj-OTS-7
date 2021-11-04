@@ -32,7 +32,7 @@ class EventFuncMap:
             'hard_drop': game_instance.hard_drop,
             'pause': game_instance.ev_pause_game,
             'hold': game_instance.ev_hold_current_mino,
-            'use_item': game_instance.use_item,
+            'use_item': game_instance.ev_use_item,
         }
 
 # 1인플레이시 키맵

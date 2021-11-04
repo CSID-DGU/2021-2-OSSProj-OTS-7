@@ -1,5 +1,9 @@
-import pygame
+import random
+import time
+import threading
 
+import pygame
+from collections import deque
 from .components.board import Board
 import copy
 from random import randint
@@ -18,8 +22,10 @@ class GameInstance:
 
         self.is_multiplayer = is_multiplayer  # 멀티플레이어 여부
 
-        self.item_list = ["bomb","clock"]
-        self.my_item = ""
+        self.item_list = ["bomb", "clock"]  # 가능한 아이템 종류
+        self.my_item_list = deque(['clock', 'clock'])  # 아이템 보유 리스트, popleft 로 선입선출 사용
+        self.clock_used = False  # 클락 아이템 사용 여부
+
         self.score = 0
         self.level = 1
         self.goal = self.level * 5
@@ -175,10 +181,25 @@ class GameInstance:
         elif self.status == 'pause':
             self.status = 'in_game'
 
+    def ev_use_item(self):
+        self.move(self.use_item)
+
     # ############ 이하 동작 메소드 #############
     def move_down(self):
         self.y += 1
-        self.move_down_count = 6 - self.level
+        self.move_down_count_reset()
+
+    def move_down_count_reset(self):
+        if self.clock_used:
+            self.move_down_count = (6 - self.level) * 2
+        else:
+            self.move_down_count = 6 - self.level
+
+    # 하강 카운트
+    def count_move_down(self):
+        self.move_down_count -= 1
+        if self.move_down_count < 0:
+            self.ev_move_down()
 
     def move_left(self):
         self.x -= 1
@@ -226,37 +247,36 @@ class GameInstance:
     def rotate_left(self):
         self.rotation = self.get_rotation(-1)
 
-    # 하강 카운트
-    def count_move_down(self):
-        self.move_down_count -= 1
-        if self.move_down_count < 0:
-            self.ev_move_down()
-            self.move_down_count = 6 - self.level
 
-    # freeze 후, 라인 완성됐는지 확인, 제거. 메소드 분리 필요?
+    # freeze 후, 라인 완성됐는지 확인, 제거.
     def check_lines(self):
         line_count = 0
-        for j in range(21):
-            is_full = True
-            for i in range(10):
-                if self.board.temp_matrix[i][j] == 0:
-                    is_full = False
-            if is_full:
-                line_count += 1
-                k = j
-                while k > 0:
-                    for i in range(10):
-                        self.board.temp_matrix[i][k] = self.board.temp_matrix[i][k - 1]
-                    k -= 1
 
-        score_list = (50, 150, 350, 1000)
-        if line_count != 0:
+        for y in range(21):  # matrix y 사이즈
+            if self.is_y_line_full(y_index=y):  # line 이 full 이면 line count 값 1 더하고 라인 지움
+                line_count += 1
+                self.erase_line(y_index=y)
+
+        score_list = (50, 150, 350, 1000)  # 분리 필요
+
+        if line_count != 0:  # 지운 라인이 있으면 점수, 골 업데이트
             self.update_score(score_list[line_count - 1] * self.level)
             self.update_goal(line_count)
 
-    # 메소드 분리 필요?
-    # def erase_lines(self):
-    #     pass
+    # 특정 y 라인이 가득 찼는지 여부 반환
+    def is_y_line_full(self, y_index: int) -> bool:
+        for x in range(10):  # matrix x 사이즈
+            if self.board.temp_matrix[x][y_index] == 0:  # 0 은 비어있는 칸을 의미
+                return False  # 빈 칸이 나오는 순간 False 반환
+        return True  # 빈 칸이 나오지 않고 for 문이 완료되면 True 반환
+
+    # 특정 y 라인 위에 있는 줄을 전부 한 줄 씩 끌어내림.
+    def erase_line(self, y_index: int):
+        while y_index > 0:
+            for x in range(10):  # matrix x 사이즈
+                self.board.frozen_matrix[x][y_index] = self.board.frozen_matrix[x][y_index - 1]
+                self.board.temp_matrix[x][y_index] = self.board.temp_matrix[x][y_index - 1]
+            y_index -= 1
 
     # 점수 더하기
     def update_score(self, to_add: int):
@@ -289,8 +309,9 @@ class GameInstance:
         if self.goal < 0:
             self.level += 1
             self.goal += self.level * 5
-            self.my_item = self.item_list[randint(0,2)]
-            print(self.my_item)
+            self.my_item_list.append(random.choice(self.item_list))
+            print(self.my_item_list)
+
     #         TODO: : my_item blit 띄우기
 
     def change_to_next_mino(self):
@@ -316,31 +337,42 @@ class GameInstance:
                     matrix[self.x + j][self.y + i] = grid[i][j]
         return matrix
 
-    def play_bgm(self):
-        self.bgm = UI_VARIABLES.bgm_list[self.level-1]
-        pygame.mixer.music.load(self.bgm)
-        pygame.mixer.music.play()
+    # todo bgm 은 게임 인스턴스에서 재생하면 안 될듯합니다.
+    # todo bgm 재생이 끝나도 무한 반복
+    # def play_bgm(self):
+    #     self.bgm = UI_VARIABLES.bgm_list[self.level - 1]
+    #     pygame.mixer.music.load(self.bgm)
+    #     pygame.mixer.music.play()
 
     def use_item(self):
-        # 아이템 이미지 기본 추가를 해야하는데 blit으로 추가를 해봤더니 전체적인 우쪽에 그냥 한칸씩 내려가네요
-        if self.my_item == "bomb":
-            k = 20
-            while k > 0:
-                for i in range(10):
-                    self.board.temp_matrix[i][k] = self.board.temp_matrix[i][k - 1]
-                k -= 1
-            if self.goal > 0 :
-                self.goal -= 1
-            else:
-                self.level +=1
-                self.goal = self.level * 5
-                self.my_item = self.item_list[randint(0,2)]
-                print(self.my_item)
-        #     화면이 업데이트 되지않음 --> 그대로 맨위에부터 한줄씩 내리면 되는것이 아닌지 --> 좌표 가 애초 다른군
-        elif self.my_item == "clock":
-            for i in range(5):
-                self.move_down_count = int(self.move_down_count * 2)
-    #       우쪽에 MOVE다운 메서드가 레벨을 참고해서 불러오기때문에 한번만 발동해서는 효과가 없습니다 더하기 해당 방법으로 적용해봤습니다
+        if self.my_item_list:
+            used_item = self.my_item_list.popleft()  # 먼저 들어온 순서대로 아이템 사용
+            if used_item == "bomb":
+                self.item_bomb()
+            elif used_item == "clock":
+                self.item_clock()
+        else:
+            print('no item left')
+
+    def item_bomb(self):
+        print('bomb used')
+        self.erase_line(20)  # 맨 아랫줄 제거, 화면 업데이트는 self.move() 래퍼 안에서 돌리면 해결됩니다. ev_use_item() 메소드에 넣었습니다.
+
+    def item_clock(self):
+        if self.clock_used:  # 이미 사용한 상태에서 사용할 경우 없애버릴지 사용을 못하게할지
+            print('already used')
+            self.my_item_list.appendleft('clock')
+        else:
+            ct = threading.Thread(target=self.clock_use, daemon=True)
+            ct.start()
+
+    def clock_use(self):
+        self.clock_used = True
+        print('slow started')
+        time.sleep(30)  # 30초
+        self.clock_used = False
+        print('slow finished')
+
     # 게임 오버시
     def on_game_over(self):
         self.reset()
