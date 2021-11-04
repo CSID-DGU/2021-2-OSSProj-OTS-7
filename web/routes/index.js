@@ -9,4 +9,8 @@ router.get('/main', (req, res, next) => {
     res.render('main');
 });
 
+router.get('/histories', (req, res, next) =>{
+    res.render('histories')
+})
+
 module.exports = router;
