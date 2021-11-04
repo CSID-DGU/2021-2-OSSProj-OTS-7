@@ -1,5 +1,4 @@
 from .game_instance import GameInstance
-from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
 
@@ -77,6 +76,7 @@ class DualPlayerTwoEventKeyMap:
             K_SLASH: 'use_item'
         }
 
+
 class EventHandler:
     def __init__(self, game_instance: GameInstance):
         self.game_instance = game_instance
@@ -101,10 +101,8 @@ class EventHandler:
         if event.type == USEREVENT:  # 타이머 이벤트임. main.py __init__ 참조
             self.on_timer_event()
         elif event.type == KEYDOWN:  # 키 입력 이벤트. KEYDOWN은 키가 눌렸을 때, KEYUP은 키가 눌린 후 다시 올라왔을때
-            try:
-                self.on_key_down_event(event)
-            except:
-                pass
+            self.on_key_down_event(event)
+
         elif event.type == KEYUP:
             self.on_key_up_event()
         elif event.type == QUIT:  # 종료시
@@ -136,17 +134,21 @@ class EventHandler:
 
     # key down event 처리
     def on_key_down_event(self, event):
-        if self.game_instance.status == 'in_game':
-            todo = self.event_key_map.get(event.key)
-            if todo is not None:
-                self.event_func_map[todo]()
-                self.event_flags_obj.buffer = 5  # 버퍼 초기화
-        elif self.game_instance.status == 'pause':
-            self.game_instance.ev_pause_game()
-        elif self.game_instance.status == 'start_screen':
-            self.game_instance.status = 'in_game'
-        elif self.game_instance.status == 'game_over':
-            self.game_instance.on_game_over()
+        try:
+            if self.game_instance.status == 'in_game':
+                todo = self.event_key_map[event.key]
+                if todo is not None:
+                    self.event_func_map[todo]()
+                    self.event_flags_obj.buffer = 5  # 버퍼 초기화
+            elif self.game_instance.status == 'pause':
+                self.game_instance.ev_pause_game()
+            elif self.game_instance.status == 'start_screen':
+                self.game_instance.status = 'in_game'
+            elif self.game_instance.status == 'game_over':
+                self.game_instance.on_game_over()
+        except KeyError:
+            # print(f'매핑되지 않은 키: {event.key=}')  # 디버그용 주석
+            pass
 
     # key_up 시 버퍼 초기화
     def on_key_up_event(self):
