@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const {User} = require('../models');
+const {User,History} = require('../models');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
@@ -53,7 +53,12 @@ function createUser(email, password, name, userType, salt) {
             salt: salt
         })
         .then(() => {
+            History.create({
+            email : email,
+            name : name
+            })
             resolve();
+
         })
         .catch((err) => {
             reject(err);
