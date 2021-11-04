@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require('path');MgxNBpMlBwgl3h4zf3ZNSQ8HI7Y2w7n…
 const Sequelize = require('sequelize');
 
 const env = process.env.NODE_ENV || 'development';
@@ -11,5 +11,6 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 db.User = require('./user')(sequelize,Sequelize);
+db.History = require('./history')(sequelize,Sequelize);
 
 module.exports = db;
