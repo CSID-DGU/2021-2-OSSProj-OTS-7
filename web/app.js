@@ -40,11 +40,15 @@ const users = require('./routes/users');
 const main = require('./routes/main');
 const admin = require('./routes/admin');
 const signup = require('./routes/signup');
+const  histories = require('./routes/histories');
+
 
 app.use('/', index);
 app.use('/users', users);
 app.use('/main',main);
 app.use('/admin',admin);
 app.use('/signup', signup);
+app.use('/histories', histories)
+
 
 module.exports = app;
