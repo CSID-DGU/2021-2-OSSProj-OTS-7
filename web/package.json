@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start" : "pm2 start app.js --watch"
+    "start": "pm2 start app.js --watch"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +23,7 @@
     "mysql2": "^2.2.5",
     "nodemailer": "^6.4.17",
     "nodemailer-smtp-transport": "^2.7.4",
+    "openurl": "^1.1.1",
     "pm2": "^5.1.2",
     "rand-token": "^1.0.1",
     "redis": "^3.0.2",
