@@ -46,7 +46,7 @@ class Launcher:
         self.run_game()
 
     def signup_btn(self):
-        webbrowser.open("https://otsauth.loca.lt/")
+        webbrowser.open("https://otsweb.loca.lt/")
 
     def help_btn(self):
         image = Image.open(uv.help_image)
