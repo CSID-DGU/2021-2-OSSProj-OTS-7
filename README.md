@@ -24,7 +24,7 @@ git clone https://github.com/CSID-DGU/2021-2-OSSProj-OTS-7.git
 ```
 - To install all the requirements please use the requirements.txt
 ```bash
-pip install -r requirements.txt
+pip install -r ./requirements.txt
 ```
 ```bash
 python ./client/run_client.py  
