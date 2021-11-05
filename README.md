@@ -2,7 +2,6 @@
 ##온라인 대전 테트리스
 ### Info
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
-![badges](https://img.shields.io/badge/OS-ubuntu,MacOs-red)
 ![Laguage](https://img.shields.io/badge/python-3.9.7-blue.svg)
 ![Laguage](https://img.shields.io/badge/node.js-14.17.5-orange)
 ![Laguage](https://img.shields.io/badge/websocket--client-1.2.1-yellow)
