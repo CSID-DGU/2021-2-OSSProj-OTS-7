@@ -8,7 +8,7 @@ const logger = require('morgan');
 dotenv.config();
 
 // port
-var port = process.env.PORT || 8000;
+var port = process.env.PORT || 8080;
 app.listen(port, function(){
     console.log("Express server has started on port " + port)
 });
@@ -18,7 +18,7 @@ var {sequelize} = require('./models/index');
 sequelize.sync();
 
 // redis connect
-app.use((req,res,next)=>{ 
+app.use((req,res,next)=>{
     const redisClient = redis.createClient(6379,'localhost');
     req.cache = redisClient;
     next();
@@ -40,7 +40,7 @@ const users = require('./routes/users');
 const main = require('./routes/main');
 const admin = require('./routes/admin');
 const signup = require('./routes/signup');
-const  histories = require('./routes/histories');
+const histories = require('./routes/histories');
 
 
 app.use('/', index);

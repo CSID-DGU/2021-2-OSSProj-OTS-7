@@ -13,7 +13,7 @@ window.onload = () => {
         const inputPassword = document.getElementById('passwordSignUp');
         const inputName = document.getElementById('nameSignUp');
         const btnSignup = document.getElementById('btnSignup');
-        
+
         btnSignup.addEventListener('click',()=>{
             let email = inputEmail.value;
             let password = inputPassword.value;
@@ -25,9 +25,12 @@ window.onload = () => {
                     if(data.msg == "success") {
                         alert('Success SignUp');
                         window.location.href = "/";
-                    } else if(data.msg == "duplicate") {
+                    } else if(data.msg == "duplicate_email") {
                         alert('이메일 중복입니다.');
-                    } else {
+                    } else if(data.msg == "duplicate_name"){
+                        alert('이름 중복입니다.')
+                    }
+                    else {
                         alert('error');
                     }
                 })
