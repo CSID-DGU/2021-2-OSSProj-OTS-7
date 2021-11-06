@@ -3,16 +3,35 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>matchHistory System</title>
+    <title>OTS</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <script rel="text/javascript" src="/javascripts/histories.js"></script>
-
-
 </head>
 
 <body>
-
-
+<div class="header">
+    <span id="pageTitle"> 전적 시스템 </span>
 </div>
+<div class="sign-up-htm">
+<!--    <div>-->
+<!--        <label> 이름으로 검색하기</label>-->
+<!--    </div>-->
+<!--    <form action="/findUser" method = "POST">-->
+<!--        <label for="user" class="label">name</label>-->
+<!--        <input id="inputName" type="text" class="input">-->
+<!--        <button type="submit" class="button" id="btnFind">검색</button>-->
+<!--    </form>-->
+    <form action="/byWins" method = 'GET'>
+        <input type="submit" value = "승수 순 확인 ">
+    </form>
+    <form action="/byPoints" method = 'GET'>
+        <input type="submit" value = "승점순 확인 ">
+    </form>
+    <form action="/UserList" method = 'GET'>
+        <input type="submit" value = "전체 유저 리스트 확인 ">
+    </form>
+</div>
+
 </body>
 
 </html>
