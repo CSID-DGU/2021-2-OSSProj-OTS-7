@@ -6,43 +6,6 @@ const {History} = require('../models');
 // todo 전적 테이블 렌더링
 //  필요  admin쪽으로 가져와서 쓰면될듯
 
-// router.get('/findUser', (req, res, next) => {
-//   const {name} = req.body;
-//   findUser(name)
-//   .then(result => {
-//     res.json(result);
-//   })
-//   .catch(err => {
-//     res.send(err);
-//   });
-// });
-
-// router.post('/findUser',(req, res) => {
-//   const {name} = req.body;
-//   findUser(name)
-//   .then((user) => {
-//     if (user != null){
-//       res.json({msg: "success finding"})
-//     }
-//   })
-// })
-//
-// // 네임 검색
-// router.post('/findUser', (req, res, next) => {
-//   const name = req.body;
-//   History.findAll({
-//     attributes: ['id', 'email', 'name', 'win', 'loss', 'points'],
-//     where:{
-//       "name" : name
-//     }
-//   })
-//   .then(result => {
-//     res.json(result);
-//   })
-//   .catch(err => {
-//     res.send(err);
-//   });
-// });
 
 router.get('/userList', (req, res, next) => {
   History.findAll({
@@ -90,5 +53,42 @@ router.get('/byWins', (req, res, next) => {
     res.send(err);
   });
 });
+// router.get('/findUser', (req, res, next) => {
+//   const {name} = req.body;
+//   findUser(name)
+//   .then(result => {
+//     res.json(result);
+//   })
+//   .catch(err => {
+//     res.send(err);
+//   });
+// });
+
+// router.post('/findUser',(req, res) => {
+//   const {name} = req.body;
+//   findUser(name)
+//   .then((user) => {
+//     if (user != null){
+//       res.json({msg: "success finding"})
+//     }
+//   })
+// })
+//
+// // 네임 검색
+// router.post('/findUser', (req, res, next) => {
+//   const name = req.body;
+//   History.findAll({
+//     attributes: ['id', 'email', 'name', 'win', 'loss', 'points'],
+//     where:{
+//       "name" : name
+//     }
+//   })
+//   .then(result => {
+//     res.json(result);
+//   })
+//   .catch(err => {
+//     res.send(err);
+//   });
+// });
 
 module.exports = router;
