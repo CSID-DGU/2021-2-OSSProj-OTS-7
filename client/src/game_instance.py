@@ -1,3 +1,4 @@
+import time
 from collections import deque
 from .components.board import Board
 import copy
@@ -18,7 +19,7 @@ class GameInstance:
         self.item_list = ["bomb", "clock"]  # 가능한 아이템 종류
         self.my_item_list = deque([])  # 아이템 보유 리스트, popleft 로 선입선출 사용
         self.clock_used = False  # 클락 아이템 사용 여부
-        self.clock_count = 300  # 30초
+        self.clock_count = 600  # 30초, 이벤트는 0.05초마다 생성
 
         self.score = 0
         self.level = 1
@@ -40,6 +41,9 @@ class GameInstance:
         self.hold_mino = None  # Hold 한 mino
 
         self.status = 'start_screen'  # start_screen, in_game, pause, game_over 등
+
+        self.former_time = None
+        self.current_time = None
 
     def reset(self):
         self.__init__()
@@ -132,6 +136,13 @@ class GameInstance:
         self.is_hard_dropped = True
 
     def ev_timer_event(self):
+        if self.former_time is None:
+            self.former_time = time.time()
+        self.current_time = time.time()
+
+        print(f'{self.current_time - self.former_time} \n {self.move_down_count=}')
+
+        self.former_time = self.current_time
         self.count_move_down()
         self.count_item_clock()
 
