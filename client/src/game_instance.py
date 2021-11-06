@@ -136,13 +136,14 @@ class GameInstance:
         self.is_hard_dropped = True
 
     def ev_timer_event(self):
-        if self.former_time is None:
-            self.former_time = time.time()
-        self.current_time = time.time()
-
-        print(f'{self.current_time - self.former_time} \n {self.move_down_count=}')
-
-        self.former_time = self.current_time
+        # 디버그용 주석
+        # if self.former_time is None:
+        #     self.former_time = time.time()
+        # self.current_time = time.time()
+        #
+        # print(f'{self.current_time - self.former_time} \n {self.move_down_count=}')
+        #
+        # self.former_time = self.current_time
         self.count_move_down()
         self.count_item_clock()
 
