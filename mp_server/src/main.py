@@ -4,7 +4,7 @@ from .player_connection import PlayerConnection
 from collections import deque
 import threading
 import asyncio
-import json
+from mp_server.src import config
 
 
 class ConnectionManager:
@@ -19,7 +19,7 @@ class ConnectionManager:
 app = FastAPI()
 con_manager = ConnectionManager()
 mp_manager = MultiplayerManager()
-message_queue = deque([])
+message_queue = deque([])  # deque 의 popleft 와 append 는 thread safe
 players_on_this_worker = {}
 
 
@@ -68,14 +68,15 @@ msg_code_map = {
 async def message_execute(msg):
     msg_type = msg.get('type')
     channel = msg.get('channel')  # user_id 가 채널
+
     try:
         pc: PlayerConnection = con_manager.active_connection_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
     except KeyError:
         print('player connection object does not exist')
         pc = None
 
-    print(msg)
-    print(msg.get('data'))
+    print(msg)  # 디버그
+    print(msg.get('data'))  # 디버그
 
     if pc is not None and msg_type == 'message':
         msg_code = msg.get('data')  # 명령 코드
@@ -115,3 +116,4 @@ async def receive_data(websocket, player_connection):
         mp_manager.redis_pup_sub.unsubscribe(player_connection.player_id)
         con_manager.active_connection_dict.pop(player_connection.player_id)
         # 연결 끊겼을 때 필요한 조치
+        # Todo 상대 클라이언트에 연결 끊김 알림

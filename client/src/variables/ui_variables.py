@@ -15,9 +15,9 @@ class UI_VARIABLES:
     init_rect_height = 187  # 하단 검정 박스 높이
     pygame.init()
     # Fonts
-    font_path = "client/assets/fonts/OpenSans-Light.ttf"
-    font_path_b = "client/assets/fonts/OpenSans-Bold.ttf"
-    font_path_i = "client/assets/fonts/Inconsolata/Inconsolata.otf"
+    font_path = "assets/fonts/OpenSans-Light.ttf"
+    font_path_b = "assets/fonts/OpenSans-Bold.ttf"
+    font_path_i = "assets/fonts/Inconsolata/Inconsolata.otf"
 
     h1 = pygame.font.Font(font_path, 50)
     h2 = pygame.font.Font(font_path, 30)
@@ -32,17 +32,17 @@ class UI_VARIABLES:
     h5_i = pygame.font.Font(font_path_i, 13)
 
     # Sounds
-    click_sound = Sound("client/assets/sounds/SFX_ButtonUp.wav")
-    move_sound = Sound("client/assets/sounds/SFX_PieceMoveLR.wav")
-    drop_sound = Sound("client/assets/sounds/SFX_PieceHardDrop.wav")
-    single_sound = Sound("client/assets/sounds/SFX_SpecialLineClearSingle.wav")
-    double_sound = Sound("client/assets/sounds/SFX_SpecialLineClearDouble.wav")
-    triple_sound = Sound("client/assets/sounds/SFX_SpecialLineClearTriple.wav")
-    tetris_sound = Sound("client/assets/sounds/SFX_SpecialTetris.wav")
-    bgm_list = ["client/assets/sounds/BGM_level1.wav",
-                "client/assets/sounds/BGM_level2.wav",
-                "client/assets/sounds/BGM_level3.wav",
-                "client/assets/sounds/BGM_level4.wav"]
+    click_sound = Sound("assets/sounds/SFX_ButtonUp.wav")
+    move_sound = Sound("assets/sounds/SFX_PieceMoveLR.wav")
+    drop_sound = Sound("assets/sounds/SFX_PieceHardDrop.wav")
+    single_sound = Sound("assets/sounds/SFX_SpecialLineClearSingle.wav")
+    double_sound = Sound("assets/sounds/SFX_SpecialLineClearDouble.wav")
+    triple_sound = Sound("assets/sounds/SFX_SpecialLineClearTriple.wav")
+    tetris_sound = Sound("assets/sounds/SFX_SpecialTetris.wav")
+    bgm_list = ["assets/sounds/BGM_level1.wav",
+                "assets/sounds/BGM_level2.wav",
+                "assets/sounds/BGM_level3.wav",
+                "assets/sounds/BGM_level4.wav"]
     # Background colors
     black = (10, 10, 10) #rgb(10, 10, 10)
     white = (255, 255, 255) #rgb(255, 255, 255)
@@ -63,6 +63,6 @@ class UI_VARIABLES:
 
     # images
 
-    bomb_image = "client/assets/img/bomb.png"
-    clock_image = "client/assets/img/clock.png"
-    help_image = "client/assets/img/help.png"
+    bomb_image = "assets/img/bomb.png"
+    clock_image = "assets/img/clock.png"
+    help_image = "assets/img/help.png"
