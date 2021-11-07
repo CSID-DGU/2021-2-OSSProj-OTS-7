@@ -3,10 +3,6 @@
 ### Info
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
 ![Laguage](https://img.shields.io/badge/python-3.9.7-blue.svg)
-![Laguage](https://img.shields.io/badge/node.js-14.17.5-orange)
-![Laguage](https://img.shields.io/badge/websocket--client-1.2.1-yellow)
-![Laguage](https://img.shields.io/badge/pygame-2.0.1-lightgreen.svg)
-
 
 ### Teams OTS
 #### 법학과 2016110652 김성현 https://github.com/kshshkim
