@@ -3,6 +3,7 @@
 ### Info
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
 ![Laguage](https://img.shields.io/badge/python-3.9.7-blue.svg)
+
 클라이언트는 [PYTRIS](https://github.com/injekim/PYTRIS)의 포크입니다.
 
 ### Teams OTS
