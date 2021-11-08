@@ -1,5 +1,5 @@
 import time
-
+import config
 import redis.exceptions
 from rejson import Client, Path
 
@@ -23,7 +23,7 @@ def get_session_obj(player1: str, player2: str):  # redis 에 등록할 session 
 
 class MultiplayerManager:
     # redis_host 는 ip 주소나 도메인 이름. rj 는 도커 네트워크 상에서의 이름. 도커 네트워크 안에서는 이름으로 호출 가능
-    def __init__(self, redis_host: str = '192.168.50.125', redis_port: int = 6379):
+    def __init__(self, redis_host: str = config.REDIS_HOST, redis_port: int = config.REDIS_PORT):
         self.host = redis_host
         self.port = redis_port
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)  # 게임 세션 데이터 저장
