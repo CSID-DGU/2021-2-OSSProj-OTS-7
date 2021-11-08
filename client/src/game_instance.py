@@ -1,13 +1,20 @@
-import time
+import pygame
 from collections import deque
 from .components.board import Board
 import copy
 from random import randint, choice
 from .components.mino import Mino
+from client.src.variables.custom_events import custom_events
+import client.src.variables.timer_variables as tv
 
 
 def new_mino():
     return Mino(shape_index=randint(0, 6))
+
+
+def post_event(custom_event):  # variables/custom_events 참조
+    pygame.event.post(pygame.event.Event(custom_events[custom_event]))
+    pass
 
 
 class GameInstance:
@@ -19,12 +26,12 @@ class GameInstance:
         self.item_list = ["bomb", "clock"]  # 가능한 아이템 종류
         self.my_item_list = deque([])  # 아이템 보유 리스트, popleft 로 선입선출 사용
         self.clock_used = False  # 클락 아이템 사용 여부
-        self.clock_count = 600  # 30초, 이벤트는 0.05초마다 생성
+        self.clock_count = tv.BASE_CLOCK_COUNT  # 30초, 이벤트는 0.05초마다 생성
 
         self.score = 0
         self.level = 1
         self.goal = self.level * 5
-        self.freeze_time_count = 0  # 미노가 바닥에 닿았을 때 카운트
+        self.freeze_time_count = tv.BASE_FREEZE_COUNT  # 미노가 바닥에 닿았을 때 카운트
         self.is_hard_dropped = False  # 현재 미노를 하드드롭 했는지 여부, freeze 관련해서 필요한 변수
 
         # self.display_update_required = True  # 현재는 구현을 안 해놨지만, 화면 갱신이 필요할 때만 True 로 변경되는 방법을 생각해볼 수 있음.
@@ -32,7 +39,7 @@ class GameInstance:
         self.x = 3  # current mino 위치
         self.y = 0
         self.rotation = 0  # current mino 회전 인덱스
-        self.move_down_count = 5  # 레벨 1일 때의 값. 타이머 이벤트가 5번 발생시 하강. 타이머 이벤트는 초당 0.1
+        self.move_down_count = tv.BASE_MOVE_DOWN_COUNT  # 레벨 1일 때의 값. 타이머 이벤트가 5번 발생시 하강. 타이머 이벤트는 0.05 초마다
 
         self.current_mino = new_mino()  # 현재 미노 초기화
         self.next_mino = new_mino()  # 다음 미노 초기화
@@ -42,8 +49,8 @@ class GameInstance:
 
         self.status = 'start_screen'  # start_screen, in_game, pause, game_over 등
 
-        self.former_time = None
-        self.current_time = None
+        # self.former_time = None  # 디버그용
+        # self.current_time = None  # 디버그용
 
     def reset(self):
         self.__init__()
@@ -129,6 +136,11 @@ class GameInstance:
         self.board.temp_matrix = copy.deepcopy(self.board.frozen_matrix)
         func()
         self.board.temp_matrix = self.draw_current_mino(self.board.temp_matrix)
+        self.display_update()
+
+    @staticmethod
+    def display_update():
+        post_event('DISPLAY_UPDATE_REQUIRED')
 
     # ############ 이하 이벤트 핸들러가 다루는 메소드 #############
     def ev_hard_drop(self):
@@ -177,6 +189,7 @@ class GameInstance:
             elif self.is_rotatable(self.x + mod, self.y, 'r'):
                 self.rotate(x_mod=mod, right_or_left='r')
                 break
+        self.display_update()
 
     def ev_rotate_left(self):
         pass
@@ -201,9 +214,9 @@ class GameInstance:
 
     def move_down_count_reset(self):
         if self.clock_used:
-            self.move_down_count = (6 - self.level) * 2
+            self.move_down_count = (tv.BASE_MOVE_DOWN_COUNT + 1 - self.level) * 2
         else:
-            self.move_down_count = 6 - self.level
+            self.move_down_count = tv.BASE_MOVE_DOWN_COUNT + 1 - self.level
 
     # 하강 카운트
     def count_move_down(self):
@@ -233,7 +246,7 @@ class GameInstance:
             self.hold_mino = self.current_mino
             self.change_to_next_mino()
         else:
-            self.freeze_time_count = 0
+            self.freeze_time_count = tv.BASE_FREEZE_COUNT
             self.x, self.y = 3, 0
             self.current_mino, self.hold_mino = self.hold_mino, self.current_mino
 
@@ -293,17 +306,17 @@ class GameInstance:
 
     # 바닥에 닿았을 때 카운트.
     def bottom_count(self):
-        if self.is_hard_dropped or self.freeze_time_count == 6:  # 바닥에 닿아도 6틱동안 움직일수 있음
+        if self.is_hard_dropped or self.freeze_time_count < 0:  # 바닥에 닿아도 6틱동안 움직일수 있음
             self.freeze_current_mino()
         else:
-            self.freeze_time_count += 1
+            self.freeze_time_count -= 1
 
     # 현재 미노를 freeze
     def freeze_current_mino(self):
         self.check_lines()
         self.board.frozen_matrix = copy.deepcopy(self.board.temp_matrix)  # 임시 matrix 를 frozen matrix 로
         self.is_hard_dropped = False  # 다음 미노로 변경됐으니 하드드롭 여부 False
-        self.freeze_time_count = 0  # freeze count 초기화
+        self.freeze_time_count = tv.BASE_FREEZE_COUNT  # freeze count 초기화
         self.update_score(10 * self.level)  # 블럭 하나 freeze 때 마다 기본 점수 10*레벨
         if self.is_stackable():  # 다음 미노가 나올 수 있는지 판정
             self.change_to_next_mino()
@@ -327,7 +340,7 @@ class GameInstance:
         self.x = 3
         self.y = 0
         self.rotation = 0
-        self.freeze_time_count = 0
+        self.freeze_time_count = tv.BASE_FREEZE_COUNT
         self.current_mino = self.next_mino
         self.next_mino = new_mino()
         self.draw_current_mino(self.board.temp_matrix)
@@ -366,10 +379,12 @@ class GameInstance:
     def item_bomb(self):
         print('bomb used')
         self.erase_line(20)  # 맨 아랫줄 제거, 화면 업데이트는 self.move() 래퍼 안에서 돌리면 해결됩니다. ev_use_item() 메소드에 넣었습니다.
+        post_event('BOMB_USED')
 
     def item_clock(self):
         if self.clock_used:
             print('already_used')
+            post_event('NO_ITEM_REMAIN')
         else:
             self.clock_used = True
 
@@ -378,7 +393,7 @@ class GameInstance:
             self.clock_count -= 1
         elif self.clock_count <= 0:
             self.clock_used = False
-            self.clock_count = 30
+            self.clock_count = tv.BASE_MOVE_DOWN_COUNT
 
     # 게임 오버시
     def on_game_over(self):

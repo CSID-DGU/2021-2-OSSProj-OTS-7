@@ -13,7 +13,7 @@ class UI_VARIABLES:
     init_rect_y = 187  # 하단 검정 박스 y최소 좌표
     init_rect_width = 300  # 하단 검정 박스 너비
     init_rect_height = 187  # 하단 검정 박스 높이
-    pygame.init()
+
     # Fonts
     font_path = "assets/fonts/OpenSans-Light.ttf"
     font_path_b = "assets/fonts/OpenSans-Bold.ttf"
