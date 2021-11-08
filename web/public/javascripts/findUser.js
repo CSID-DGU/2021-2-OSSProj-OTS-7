@@ -25,14 +25,14 @@ window.onload = () => {
       const points = document.createElement('td');
 
       userNum.innerText = userList[index].id;
-      email.innerText = userList[index].email;
+      // email.innerText = userList[index].email;
       name.innerText = userList[index].name;
       win.innerText = userList[index].win;
       loss.innerText = userList[index].loss;
       points.innerText = userList[index].points;
 
       tr.append(userNum);
-      tr.append(email);
+      // tr.append(email);
       tr.append(name);
       tr.append(win);
       tr.append(loss);
