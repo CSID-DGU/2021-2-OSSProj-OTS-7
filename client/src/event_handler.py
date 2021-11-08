@@ -1,20 +1,22 @@
 from .game_instance import GameInstance
+from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
+from client.src.variables.custom_events import custom_events, sound_play_events
 
 
 class EventFlags:
     def __init__(self):
-        self.buffer = 5
+        self.buffer = 3
         self.dict = {
-            'down': False,
-            'up': False,
-            'right': False,
-            'left': False,
-            'hard_drop': False,
-            'pause': False,
-            'hold': False,
-            'use_item': False
+            'down': 3,
+            'up': 3,
+            'right': 3,
+            'left': 3,
+            'hard_drop': 3,
+            'pause': 3,
+            'hold': 3,
+            'use_item': 3
         }
 
     def reset(self):
@@ -33,6 +35,7 @@ class EventFuncMap:
             'hold': game_instance.ev_hold_current_mino,
             'use_item': game_instance.ev_use_item,
         }
+
 
 # 1인플레이시 키맵
 class EventKeyMap:
@@ -63,6 +66,7 @@ class DualPlayerOneEventKeyMap:
             K_h: 'use_item'
         }
 
+
 class DualPlayerTwoEventKeyMap:
     def __init__(self):
         self.dict = {
@@ -78,8 +82,9 @@ class DualPlayerTwoEventKeyMap:
 
 
 class EventHandler:
-    def __init__(self, game_instance: GameInstance):
+    def __init__(self, game_instance: GameInstance, display_drawer: DisplayDrawer):
         self.game_instance = game_instance
+        self.display_drawer = display_drawer
         # if multiplayer:
         #     self.mp_game_instance = mp_game_instance
         #     self.mp_ev_flags = mp_ev_flags
@@ -93,25 +98,42 @@ class EventHandler:
         self.event_key_map_obj = EventKeyMap()
         self.event_key_map: dict = self.event_key_map_obj.dict
 
+        self.custom_event_init()
+
         self.quit = False
+
+    def custom_event_init(self):
+        map(pygame.event.Event, custom_events.items())  # pygame 이벤트 등록
+        map(pygame.event.Event, sound_play_events.items())  # pygame 이벤트 등록
+
+        allowed_list = [QUIT, KEYUP, KEYDOWN, USEREVENT, VIDEORESIZE]
+        allowed_list.extend(list(custom_events.values()))
+        allowed_list.extend(list(sound_play_events.values()))
+
+        pygame.event.set_allowed(allowed_list)  # 처리할 이벤트 종류 제한
 
     # main 이 event 를 넘겨주는 메소드
     def handle_event(self, event):
         # self.event_flags dict 의 key 별 bool 값을 확인하여 사이클마다 실행,
         if event.type == USEREVENT:  # 타이머 이벤트임. main.py __init__ 참조
             self.on_timer_event()
+            self.execute_event()
+            self.check_key_held()
+
+        elif event.type == custom_events['DISPLAY_UPDATE_REQUIRED']:  # 화면 업데이트
+            # self.display_drawer.update_display()
+            pass
         elif event.type == KEYDOWN:  # 키 입력 이벤트. KEYDOWN은 키가 눌렸을 때, KEYUP은 키가 눌린 후 다시 올라왔을때
             self.on_key_down_event(event)
-
         elif event.type == KEYUP:
             self.on_key_up_event()
+        elif event.type in sound_play_events.values():
+            self.sound_play(event.type)
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
             self.quit = True
         # elif event.type == VIDEORESIZE:
 
-        self.check_key_held()
-        self.execute_event()
 
     # key_hold 꾹 누르기 체크
     def check_key_held(self):
@@ -120,26 +142,21 @@ class EventHandler:
             for key in self.event_key_map.keys():  # event_key_map 의 모든 키를 확인
                 if key_held[key]:
                     flag = self.event_key_map[key]  # key 에 매핑된 flag
-                    if self.event_flags_obj.buffer < 0:  # 기본 버퍼는 5, 버퍼가 음수일시 연속 키 입력
-                        self.event_flags[flag] = True  # 매핑된 flag True 로 변경
-                    else:
-                        self.event_flags_obj.buffer -= 1
+                    self.event_flags[flag] -= 1
 
     # event flag 확인 후 매핑 된 펑션 실행
     def execute_event(self):
         for flag_type in self.event_flags.keys():
-            if self.event_flags[flag_type]:
+            if self.event_flags[flag_type] < 0:
                 self.event_func_map[flag_type]()
-                self.event_flags[flag_type] = False  # 실행 후에는 플래그 False 로 변경
+                # self.event_flags[flag_type] = False  # 실행 후에는 플래그 초기화
 
     # key down event 처리
     def on_key_down_event(self, event):
         try:
             if self.game_instance.status == 'in_game':
                 todo = self.event_key_map[event.key]
-                if todo is not None:
-                    self.event_func_map[todo]()
-                    self.event_flags_obj.buffer = 5  # 버퍼 초기화
+                self.event_func_map[todo]()
             elif self.game_instance.status == 'pause':
                 self.game_instance.ev_pause_game()
             elif self.game_instance.status == 'start_screen':
@@ -152,9 +169,13 @@ class EventHandler:
 
     # key_up 시 버퍼 초기화
     def on_key_up_event(self):
-        self.event_flags_obj.buffer = 5
+        for key in self.event_flags.keys():
+            self.event_flags[key] = self.event_flags_obj.buffer
 
     # 타이머 이벤트
     def on_timer_event(self):
         if self.game_instance.status == 'in_game':
             self.game_instance.ev_timer_event()
+
+    def sound_play(self, event_type):
+        pass

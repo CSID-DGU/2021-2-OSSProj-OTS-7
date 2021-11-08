@@ -5,6 +5,7 @@ from .event_handler import EventHandler
 from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
 from .ot_websocket import OTSWebsocket
+import time
 
 
 class OTS:
@@ -27,7 +28,7 @@ class OTS:
         self.running = True  # 가동 상태, 현재 이벤트 핸들러에서 pygame.quit()을 이용해 끄게 되는데, 손을 봐야할듯함.
 
         self.display_drawer = DisplayDrawer(self.game_instance, self.multiplayer_instance)  # 화면 업데이트 처리
-        self.event_handler = EventHandler(self.game_instance)  # 키 입력, 타이머 등 이벤트 처리
+        self.event_handler = EventHandler(self.game_instance, self.display_drawer)  # 키 입력, 타이머 등 이벤트 처리
 
         pygame.time.set_timer(pygame.USEREVENT, 50)  # 0.05초마다 이벤트 생성
         pygame.display.set_caption("OTS")  # 창 상단에 표시되는 이름
