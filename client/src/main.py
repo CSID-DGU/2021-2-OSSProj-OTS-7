@@ -28,9 +28,7 @@ class OTS:
 
         self.display_drawer = DisplayDrawer(self.game_instance, self.multiplayer_instance)  # 화면 업데이트 처리
         self.event_handler = EventHandler(self.game_instance)  # 키 입력, 타이머 등 이벤트 처리
-        self.pygame = pygame
 
-        pygame.init()  # 파이게임 초기화
         pygame.time.set_timer(pygame.USEREVENT, 50)  # 0.05초마다 이벤트 생성
         pygame.display.set_caption("OTS")  # 창 상단에 표시되는 이름
 
@@ -42,7 +40,6 @@ class OTS:
         self.main_loop()
 
     def main_loop(self):
-        # self.game_instance.play_bgm()
         while self.running:
             # 이벤트 처리
             for event in pygame.event.get():
@@ -54,7 +51,8 @@ class OTS:
 
             # 게임 종료
             if self.event_handler.quit:
-                self.pygame.quit()
+                pygame.display.quit()
+                pygame.quit()
                 if self.game_mode == 'online':
                     self.websocket_client.ws.close()  # 소켓 해제
                 sys.exit()
