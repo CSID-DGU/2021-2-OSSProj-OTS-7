@@ -1,8 +1,6 @@
 from .main import OTS
 from tkinter import *
 import webbrowser
-from PIL import Image
-from .variables.ui_variables import UI_VARIABLES as uv
 
 
 class Launcher:
@@ -49,9 +47,7 @@ class Launcher:
         webbrowser.open("https://otsweb.loca.lt/")
 
     def help_btn(self):
-        image = Image.open(uv.help_image)
-        image.show()
-
+        webbrowser.open("https://github.com/CSID-DGU/2021-2-OSSProj-OTS-7/blob/main/client/assets/img/help.png?raw=true")
     def run_game(self):
         self.tk.destroy()
         ots = OTS(game_mode=self.game_mode, player_id=self.player_id)

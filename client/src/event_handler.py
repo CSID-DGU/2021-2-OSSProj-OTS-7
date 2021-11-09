@@ -2,7 +2,7 @@ from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
-from client.src.variables.custom_events import custom_events, sound_play_events
+from .variables.custom_events import custom_events, sound_play_events
 
 
 class EventFlags:
@@ -146,10 +146,11 @@ class EventHandler:
 
     # event flag 확인 후 매핑 된 펑션 실행
     def execute_event(self):
-        for flag_type in self.event_flags.keys():
-            if self.event_flags[flag_type] < 0:
-                self.event_func_map[flag_type]()
-                # self.event_flags[flag_type] = False  # 실행 후에는 플래그 초기화
+        if self.game_instance.status == 'in_game':
+            for flag_type in self.event_flags.keys():
+                if self.event_flags[flag_type] < 0:
+                    self.event_func_map[flag_type]()
+                    # self.event_flags[flag_type] = False  # 실행 후에는 플래그 초기화
 
     # key down event 처리
     def on_key_down_event(self, event):
