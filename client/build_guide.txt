@@ -1,0 +1,12 @@
+You can build ots-client using pyinstaller(https://www.pyinstaller.org/)
+
+Before building the binary you need to install dependencies.
+/path/to/client$ pip install -r requirements.txt
+
+You can install pyinstaller using pip.
+/path/to/client$ pip install pyinstaller
+
+Build with this command.
+/path/to/client$ pyinstaller -w --one-file run_client.py
+
+You have to put the result binary file and 'assets' folder in the same directory to run it properly.
