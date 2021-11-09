@@ -6,10 +6,10 @@ const {History} = require('../models');
 // todo 전적 테이블 렌더링
 //  필요  admin쪽으로 가져와서 쓰면될듯
 
-
+//이메일 삭제
 router.get('/userList', (req, res, next) => {
   History.findAll({
-    attributes: ['id', 'email', 'name', 'win', 'loss', 'points'],
+    attributes: ['id',  'name', 'win', 'loss', 'points'],
     order: [
       ['id','ASC']
     ]
@@ -25,7 +25,7 @@ router.get('/userList', (req, res, next) => {
 // 승점순
 router.get('/byPoints', (req, res, next) => {
   History.findAll({
-    attributes: ['id', 'email', 'name', 'win', 'loss', 'points'],
+    attributes: ['id', 'name', 'win', 'loss', 'points'],
     order: [
       ['points','DESC']
     ]
@@ -41,7 +41,7 @@ router.get('/byPoints', (req, res, next) => {
 // 승수 순
 router.get('/byWins', (req, res, next) => {
   History.findAll({
-    attributes: ['id', 'email', 'name', 'win', 'loss', 'points'],
+    attributes: ['id', 'name', 'win', 'loss', 'points'],
     order: [
       ['win','DESC']
     ]
