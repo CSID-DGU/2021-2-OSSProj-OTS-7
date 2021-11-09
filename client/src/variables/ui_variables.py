@@ -66,3 +66,4 @@ class UI_VARIABLES:
     bomb_image = "assets/img/bomb.png"
     clock_image = "assets/img/clock.png"
     help_image = "assets/img/help.png"
+    tetris_image = "assets/img/tetris.png"

@@ -38,13 +38,17 @@ class DisplayDrawer:
             UI_VARIABLES.grey_1,
             Rect(UI_VARIABLES.init_rect_x, UI_VARIABLES.init_rect_y, UI_VARIABLES.init_screen_width, UI_VARIABLES.init_rect_height)
         )  # 아마도 하단 검정 박스
-        title = UI_VARIABLES.h1.render("PYTRIS™", 1, UI_VARIABLES.grey_1)
+        title = UI_VARIABLES.h1.render("OTS ™", 1, UI_VARIABLES.grey_1)
         title_start = UI_VARIABLES.h5.render("Press space to start", 1, UI_VARIABLES.white)
         title_info = UI_VARIABLES.h6.render("Copyright (c) 2017 Jason Kim All Rights Reserved.", 1,
                                             UI_VARIABLES.white)
 
         self.screen.blit(title, (65, 120))
         self.screen.blit(title_info, (40, 335))
+
+        icon = pygame.image.load("assets/img/tetris.png")
+        pygame.display.set_icon(icon)
+
 
     # game_instance 의 status 가 in_game 일 때 렌더링. components.draw_function.py 참조
     def draw_in_game_screen(self):
