@@ -1,54 +1,68 @@
 from .main import OTS
-from tkinter import *
 import webbrowser
+from PyQt5.QtWidgets import *
+import sys
 
-
-class Launcher:
+class Launcher(QWidget):
     def __init__(self):
-        self.tk = Tk()
-        self.tk.title('OTS Launcher')
+        self.app = QApplication(sys.argv)
+        super().__init__()
+        self.initialize()
 
-        # 설정
         self.game_mode = None
         self.player_id = 'offline'
 
-        # 구성요소
-        self.single_btn = Button(text='Single Play', width=15, command=self.on_single_btn,)
-        self.single_btn.pack()
+    def initialize(self):
+        self.setGeometry(300, 300, 400, 300)
+        layout = QVBoxLayout()
+        self.setLayout(layout)
 
-        self.multi_btn = Button(text='Dual Play', width=15, command=self.on_dual_btn,)
-        self.multi_btn.pack()
+        single_btn = QPushButton("Single play")
+        single_btn.clicked.connect(self.single_btn_clicked)
+        layout.addWidget(single_btn)
 
-        self.online_btn = Button(text='Online Play', width=15, command=self.on_online_btn,)
-        self.online_btn.pack()
+        dual_btn = QPushButton("Dual play")
+        dual_btn.clicked.connect(self.dual_btn_clicked)
+        layout.addWidget(dual_btn)
 
-        self.signup_btn = Button(text='Sign Up', width=15, command=self.signup_btn,)
-        self.signup_btn.pack()
+        online_btn = QPushButton("Online play")
+        single_btn.clicked.connect(self.online_btn_clicked)
+        layout.addWidget(online_btn)
 
-        self.help_btn = Button(text='Help', width=15, command=self.help_btn,)
-        self.help_btn.pack()
+        signup_btn = QPushButton("Sign up")
+        signup_btn.clicked.connect(self.signup_btn_clicked)
+        layout.addWidget(signup_btn)
 
-    def run_launcher(self):
-        self.tk.mainloop()
+        help_btn = QPushButton("Help")
+        help_btn.clicked.connect(self.help_btn_clicked)
+        layout.addWidget(help_btn)
 
-    def on_single_btn(self):
+    def single_btn_clicked(self):
         self.game_mode = 'single'
         self.run_game()
+        sys.exit(self.app.exec_())
 
-    def on_dual_btn(self):
+    def dual_btn_clicked(self):
         self.game_mode = 'dual'
         self.run_game()
+        sys.exit(self.app.exec_())
 
-    def on_online_btn(self):
+    def online_btn_clicked(self):
         self.game_mode = 'online'
         self.run_game()
+        sys.exit(self.app.exec_())
 
-    def signup_btn(self):
-        webbrowser.open("https://otsweb.loca.lt/")
+    def signup_btn_clicked(self):
+        webbrowser.open("https://ots.prvt.dev/")
 
-    def help_btn(self):
+    def help_btn_clicked(self):
         webbrowser.open("https://github.com/CSID-DGU/2021-2-OSSProj-OTS-7/blob/main/client/assets/img/help.png?raw=true")
+
+    def run_launcher(self):
+        screen = Launcher()
+        screen.show()
+        sys.exit(self.app.exec_())
+
     def run_game(self):
-        self.tk.destroy()
         ots = OTS(game_mode=self.game_mode, player_id=self.player_id)
         ots.main_loop()
