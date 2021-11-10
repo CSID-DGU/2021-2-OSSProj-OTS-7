@@ -1,9 +1,10 @@
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
+from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
 from .variables.ui_variables import UI_VARIABLES as uv
 from .main import OTS
 import webbrowser
 import sys
+
 
 
 class Launcher(QWidget):
