@@ -4,7 +4,7 @@ import threading
 from .event_handler import EventHandler
 from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
-from .ot_websocket import OTSWebsocket
+from .online import OnlineManager
 import time
 
 
@@ -21,7 +21,7 @@ class OTS:
             self.game_instance = GameInstance()
 
         if self.game_mode == 'online':
-            self.websocket_client = OTSWebsocket(self.player_id, self.game_instance, self.multiplayer_instance)
+            self.websocket_client = OnlineManager(self.player_id, self.game_instance, self.multiplayer_instance)
             self.wsc_thread = threading.Thread(target=self.websocket_client.run_forever, daemon=True)  # 웹 소켓 연결 스레드
 
         self.clock = pygame.time.Clock()  # 타이머 이벤트 발생기
@@ -61,3 +61,4 @@ class OTS:
     # 이벤트 핸들러에 이벤트 넘겨주기
     def handle_event(self, event):
         self.event_handler.handle_event(event)
+

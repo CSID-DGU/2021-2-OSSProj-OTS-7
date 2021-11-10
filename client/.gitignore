@@ -5,3 +5,7 @@ venv/
 __pychache__
 pt-old
 .DS_Store
+/run_client
+/run_client.spec
+/build/
+/dist/

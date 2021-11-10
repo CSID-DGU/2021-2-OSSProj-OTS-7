@@ -46,10 +46,6 @@ class DisplayDrawer:
         self.screen.blit(title, (65, 120))
         self.screen.blit(title_info, (40, 335))
 
-        icon = pygame.image.load("assets/img/tetris.png")
-        pygame.display.set_icon(icon)
-
-
     # game_instance 의 status 가 in_game 일 때 렌더링. components.draw_function.py 참조
     def draw_in_game_screen(self):
         if self.multiplayer_instance is not None:
