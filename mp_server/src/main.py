@@ -1,28 +1,19 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .multiplayer_manager import MultiplayerManager
-from .player_connection import PlayerConnection
+from .redis_manager import RedisManager
+from .user_instance import UserInstance
 from collections import deque
 import threading
 import asyncio
-from mp_server.src import config
-
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connection_dict = {}
-
-    def disconnect(self, player_id: str):
-        self.active_connection_dict[player_id].ws.close()  # 소켓 닫음
-        self.active_connection_dict.pop(player_id)  # 딕셔너리 pop
+import json
 
 
 app = FastAPI()
-con_manager = ConnectionManager()
-mp_manager = MultiplayerManager()
+mp_manager = RedisManager()
 message_queue = deque([])  # deque 의 popleft 와 append 는 thread safe
-players_on_this_worker = {}
+players_dict = {}  # players connected to this worker process
 
 
+# 시작시 메시지 리슨, 메시지 프로세스 스레드 시작
 @app.on_event('startup')
 async def on_startup():
     ml = threading.Thread(target=message_listen, daemon=True)
@@ -33,7 +24,7 @@ async def on_startup():
 
 # redis 에서 받은 메시지를 큐에 넣음. 스레드로 사용할것
 def message_listen():
-    for msg in mp_manager.redis_pup_sub.listen():
+    for msg in mp_manager.msg_pubsub.listen():
         if msg.get('type') == 'message':
             message_queue.append(msg)
 
@@ -49,71 +40,52 @@ def message_queue_gen():
 def message_process():
     loop = asyncio.new_event_loop()
     for msg in message_queue_gen():
-        loop.run_until_complete(message_execute(msg))
+        loop.run_until_complete(broker_msg_exec(msg))
 
 
-msg_code_map = {
-    b'go': 'opponent_game_over',
-    b'ms': 'match_set',
-    b'mc': 'match_complete',
-    b'gs': 'game_start',
-    b'sa': 'solicit_accepted',
-    b'sr': 'solicit_rejected',
-    b'lo': 'loser',
-    b'wi': 'winner'
-}
-
-
-# 메시지 명령 실행
-async def message_execute(msg):
+# 메시지 브로커에게 받은 메시지 명령 실행
+async def broker_msg_exec(msg):
     msg_type = msg.get('type')
-    channel = msg.get('channel')  # user_id 가 채널
+    channel: bytes = msg.get('channel')  # user_id 가 채널
 
     try:
-        pc: PlayerConnection = con_manager.active_connection_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
+        pc: UserInstance = players_dict[channel.decode()]  # user_id 에 매핑된 플레이어 커넥션 객체
     except KeyError:
         print('player connection object does not exist')
         pc = None
 
-    print(msg)  # 디버그
-    print(msg.get('data'))  # 디버그
-
     if pc is not None and msg_type == 'message':
-        msg_code = msg.get('data')  # 명령 코드
-
-        if msg_code == b'gd':
-            await pc.send_game_info()  # 현재 게임 상황 전송
-        elif msg_code == b'ss':
-            await pc.send_solicitors()  # 현재 solicitor 목록 전송
-        else:
-            val = msg_code_map.get(msg_code)
-            if val is not None:
-                # await pc.send_event(val)
-                print(val)
-            else:
-                print('invalid code')
+        await pc.server_msg_exec(msg=msg)
 
 
 @app.websocket("/ws")
 async def websocket_connection(websocket: WebSocket):
-    await websocket.accept()
+    player_connection: UserInstance = await connect(websocket)  # 연결시 플레이어 커넥션 객체를 생성하고 반환함.
+    await receive_data(websocket, player_connection)  # 클라이언트에서 보내는 데이터를 연결이 끝나기 전까지 받아옴.
+
+
+async def connect(websocket: WebSocket):
+    await websocket.accept()  # 연결 수락
     player_id = str(await websocket.receive_text())  # 처음 받는 텍스트를 플레이어 아이디로 처리, 추후 jwt 인증 로직 넣을 예정
-    mp_manager.redis_pup_sub.subscribe(player_id)  # redis player_id 채널 구독
-
-    player_connection = PlayerConnection(player_id=player_id, mp_manager=mp_manager, websocket=websocket)
-    con_manager.active_connection_dict[player_id] = player_connection  # connection manager 객체의 active connection dict 에 {player_id : player_connection} 추가
-
-    await receive_data(websocket, player_connection)  # 무한루프로 클라이언트에서 보내는 데이터를 받아옴.
+    mp_manager.msg_pubsub.subscribe(player_id)  # redis player_id 채널 구독
+    player_con = UserInstance(player_id=player_id, websocket=websocket)
+    players_dict[player_id] = player_con
+    return player_con
 
 
-async def receive_data(websocket, player_connection):
+async def receive_data(websocket, player_connection: UserInstance):
     try:
         while True:
-            data = await websocket.receive_json()
-            await player_connection.parse_request(data=data)
+            try:
+                data: dict = await websocket.receive_json()  # 받은 json 형식 데이터, 딕셔너리로 자동 변환됨.
+                await player_connection.user_msg_exec(msg=data)
+            except json.decoder.JSONDecodeError:
+                print('not json type data')
 
-    except WebSocketDisconnect:
-        mp_manager.redis_pup_sub.unsubscribe(player_connection.player_id)
-        con_manager.active_connection_dict.pop(player_connection.player_id)
+    except WebSocketDisconnect:  # 연결 종료시
+        print(f'player {player_connection.player_id} disconnected')
+        mp_manager.msg_pubsub.unsubscribe(player_connection.player_id)
+        players_dict.pop(player_connection.player_id)
         # 연결 끊겼을 때 필요한 조치
         # Todo 상대 클라이언트에 연결 끊김 알림
+

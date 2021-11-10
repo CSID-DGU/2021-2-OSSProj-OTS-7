@@ -1,5 +1,5 @@
 import time
-import config
+from . import config
 import redis.exceptions
 from rejson import Client, Path
 
@@ -21,7 +21,7 @@ def get_session_obj(player1: str, player2: str):  # redis 에 등록할 session 
     return to_return
 
 
-class MultiplayerManager:
+class RedisManager:
     # redis_host 는 ip 주소나 도메인 이름. rj 는 도커 네트워크 상에서의 이름. 도커 네트워크 안에서는 이름으로 호출 가능
     def __init__(self, redis_host: str = config.REDIS_HOST, redis_port: int = config.REDIS_PORT):
         self.host = redis_host
@@ -29,14 +29,14 @@ class MultiplayerManager:
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)  # 게임 세션 데이터 저장
         self.waiting = Client(host=self.host, port=self.port, db=1, decode_responses=True)  # 게임 대기열
         self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=False)  # 메시지 브로커
-        self.redis_pup_sub = self.msg_broker.pubsub()  # 메시지 브로커 pub_sub
+        self.msg_pubsub = self.msg_broker.pubsub()  # 메시지 브로커 pub_sub
 
         self.initial_subscribe()  # 메시지 채널 구독
 
     # 레디스 메시지 채널 구독
     def initial_subscribe(self):
-        to_subscribe = ['waiting']
-        self.redis_pup_sub.subscribe(to_subscribe)
+        to_subscribe = ['waiting']  # test
+        self.msg_pubsub.subscribe(to_subscribe)
 
     def is_waiter_exist(self, waiter_id: str) -> bool:
         if self.waiting.jsonget(waiter_id, Path.rootPath()) is None:
@@ -52,7 +52,7 @@ class MultiplayerManager:
         try:
             self.waiting.jsondel(player_id)
         except redis.exceptions.DataError:
-            pass
+            print(f'{player_id} is not ins waiting list')
 
     async def solicitor_get(self, waiter_id):
         return self.waiting.jsonget(waiter_id, Path('.solicitors'))
@@ -63,26 +63,26 @@ class MultiplayerManager:
             self.waiting.jsonarrappend(solicitor_id)
             self.msg_broker.publish(waiter_id, 'su')
 
-    async def match_id_set(self, player1: str, player2: str):
-        self.session.jsonset('opponent', Path(f'.{player1}'), player2)
-        self.session.jsonset('opponent', Path(f'.{player2}'), player2)
+    async def match_id_set(self, solicitor_id: str, waiter_id: str):  # 매치 id 는 waiter_id, db 업데이트 등 게임 결과 상태 처리는 waiter 쪽 프로세스가 전담.
+        self.session.jsonset('opponent', Path(f'.{solicitor_id}'), waiter_id)
+        self.session.jsonset('opponent', Path(f'.{waiter_id}'), waiter_id)
 
-    async def player_match_id_get(self, player_id: str):
+    async def player_match_id_get(self, player_id: str):  # 현재 플레이어의 매치 id 반환
         return self.session.jsonget('opponent', Path(f'.{player_id}'))
 
-    async def player_match_id_clear(self, player_id: str):
+    async def player_match_id_clear(self, player_id: str):  # 현재 플레이어에게 할당된 매치 id 제거
         self.session.jsondel('opponent', Path(f'.{player_id}'))
 
-    async def solicitor_accept(self, solicitor_id: str, waiter_id: str):  # 제안 수락
-        self.waiting.jsondel(solicitor_id)
-        self.waiting.jsondel(waiter_id)
-        await self.match_id_set(solicitor_id, waiter_id)
-        await self.game_session_set(match_id=waiter_id, player1=solicitor_id, player2=waiter_id)
-        self.msg_broker.publish(solicitor_id, 'sa')
-        self.msg_broker.publish(waiter_id, 'sa')
-        time.sleep(3)
-        self.msg_broker.publish(solicitor_id, 'gs')
-        self.msg_broker.publish(waiter_id, 'gs')
+    # async def solicitor_accept(self, solicitor_id: str, waiter_id: str):  # 제안 수락
+    #     self.waiting.jsondel(solicitor_id)
+    #     self.waiting.jsondel(waiter_id)
+    #     await self.match_id_set(solicitor_id, waiter_id)
+    #     await self.game_session_set(match_id=waiter_id, player1=solicitor_id, player2=waiter_id)
+    #     self.msg_broker.publish(solicitor_id, 'sa')
+    #     self.msg_broker.publish(waiter_id, 'sa')
+    #     time.sleep(3)  # 게임 시작까지 3초 유예
+    #     self.msg_broker.publish(solicitor_id, 'gs')
+    #     self.msg_broker.publish(waiter_id, 'gs')
 
     async def game_session_set(self, match_id, player1, player2):  # 게임 세션 생성
         data = {
@@ -93,7 +93,7 @@ class MultiplayerManager:
 
     async def game_session_data_set(self, data, match_id, player_id):  # 게임 데이터 클라이언트에게 받아서 보냄
         try:
-            data_to_put = data.get('game_data')
+            data_to_put = data.get('d')
             self.session.jsonset(match_id, Path(f'.{player_id}'), data_to_put)
         except redis.exceptions.ResponseError:
             await self.game_session_set(match_id, 'a3456', 'a1234')  # 테스트용 예외처리, 실제 서비스에선 수정 필요.
