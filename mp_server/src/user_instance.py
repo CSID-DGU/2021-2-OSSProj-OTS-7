@@ -14,8 +14,6 @@ msg_code_map = {
 }
 
 
-
-
 class ServerMsgExecutor:
     pass
 
@@ -52,21 +50,27 @@ class UserInstance:  # 명령 실행 전 상태확인 등 게임 제어
         self.mpm = mp_manager
         self.ws = websocket
 
-        self.solicitee = None
+        self.host = None
         self.opponent = None
         self.current_match_id = None
 
     # 클라이언트 요청 실행
     async def user_msg_exec(self, msg: dict):
         t, d = user_msg_parse(msg)
-        if t == 'gd':
+        if t == 'gd':  # game data
             await self.game_data_in(data=d)
-        elif t == 'wla':
+        elif t == 'wa':  # waiting add
             await self.waiting_list_add()
-        elif t == 'wlr':
+        elif t == 'wr':  # waiting remove
             await self.waiting_list_remove()
-        elif t == 'sc':
-            await self.solicit(waiter_id=d)
+        elif t == 'a':  # approach
+            await self.approach(waiter_id=d)
+        elif t == 'ac':  # approach cancel
+            await self.approach_cancel()
+        elif t == 'ha':  # host accept
+            await self.host_accept(approacher_id=d)
+        elif t == 'hr':  # host reject
+            await self.host_reject(approacher_id=d)
         else:
             print(f'code {t} is not a valid code')
 
@@ -85,45 +89,49 @@ class UserInstance:  # 명령 실행 전 상태확인 등 게임 제어
         else:
             print(f'{self.player_id} is not in waiting state. {self.status=}')
 
-    async def solicit(self, waiter_id):
-        if self.status == 'hello' or self.status == 'waiting':
-            await self.mpm.solicitor_set(solicitor_id=self.player_id, waiter_id=waiter_id)
-            self.status = 'soliciting'
-            self.solicitee = waiter_id
+    async def approach(self, waiter_id):
+        if self.status == 'hello':
+            await self.mpm.approacher_set(approacher_id=self.player_id, waiter_id=waiter_id)
+            self.status = 'approaching'
+            self.host = waiter_id
         else:
-            print(f'{self.player_id} tried solicit, but failed. \nstatus={self.status} \ntarget={waiter_id}')
+            print(f'{self.player_id} tried approach, but failed. \nstatus={self.status} \ntarget={waiter_id}')
 
-    async def solicit_cancel(self):
-        if self.status == 'soliciting':
+    async def approach_cancel(self):
+        if self.status == 'approaching':
             pass
 
-    async def solicitee_accept(self):
+    async def host_accept(self, approacher_id):
+        if self.status == 'waiting' and approacher_id in self.mpm.approacher_get(self.player_id):
+            pass
+
+    async def host_reject(self, approacher_id):
         pass
 
-    async def solicitee_reject(self):
-        pass
-
+    # 클라이언트의 send_current_gd 에 대응
     async def game_data_in(self, data: dict):
         pass
+
+    # ############################################
 
     # 서버 명령 실행
     async def server_msg_exec(self, msg: dict):
         try:
-            msg_code: bytes = msg['data']  # 명령 코드
+            mc: bytes = msg['data']  # 메시지 코드 msg_code
         except KeyError:
-            msg_code = b'error'
+            mc = b'error'
             print(f'invalid message data: \n{msg}')
 
-        if msg_code == b'gd':
+        if mc == b'gd':
             await self.game_data_out()  # 현재 게임 상황 전송
-        elif msg_code == b'ss':
-            await self.send_solicitors()  # 현재 solicitor 목록 전송
+        elif mc == b'ss':
+            await self.send_approachers()  # 현재 approacher 목록 전송
         else:  # 해당하지 않는 경우 msg_code_map 에 있는 단순 상태 코드만 전송함.
             try:
-                val = msg_code_map[msg_code]
+                val = msg_code_map[mc]
                 await self.send_event(val)
             except KeyError:
-                print(f'invalid code: {msg_code=}')
+                print(f'invalid code: {mc=}')
 
     # 이하 서버 명령으로 실행되는 메소드
     async def game_data_out(self):
@@ -151,6 +159,6 @@ class UserInstance:  # 명령 실행 전 상태확인 등 게임 제어
         }
         await self.ws.send_json(to_send)
 
-    async def send_solicitors(self):
-        await self.mpm.solicitor_get(self.player_id)
+    async def send_approachers(self):
+        await self.mpm.approacher_get(self.player_id)
 

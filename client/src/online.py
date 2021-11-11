@@ -3,6 +3,7 @@ import time
 import threading
 import json
 import pprint
+from .main import OTS
 
 # server side code scheme
 # 't': # type
@@ -11,14 +12,14 @@ import pprint
 #     'd': data
 # }
 # type list -send
-# 'gd':  # game data
-# 'atw':  # add to waiting list
-# 'qw':  # quit waiting
-# 'sc':  # solicit
-# 'gs':  # get solicitors
-# 'ac':  # accept solicit
-#
-#
+# t == 'gd':  # game data
+# t == 'wa':  # waiting add
+# t == 'wr':  # waiting remove
+# t == 'a':  # approach
+# t == 'ac':  # approach cancel
+# t == 'aa':  # host accept
+# t == 'ar':  # host reject
+
 
 def on_error(ws, error):
     print(error)
@@ -31,12 +32,11 @@ def on_close(ws, close_status_code, close_msg):
 class ConnectionManager:
     pass
 
+
 class OnlineManager:
-    def __init__(self, user_id, game_instance, multiplayer_instance):
+    def __init__(self, user_id):
         # websocket.enableTrace(True)
         self.status = 'hello'
-        self.game_instance = game_instance
-        self.multiplayer_instance = multiplayer_instance
         self.user_id = user_id
         self.opponent = None
         self.ws = websocket.WebSocketApp(
@@ -70,8 +70,8 @@ class OnlineManager:
         # 'go': 'opponent_game_over',
         # 'mc': 'match_complete',
         # 'gs': 'game_start',
-        # 'sa': 'solicit_accepted',
-        # 'sr': 'solicit_rejected',
+        # 'aa': 'approach_accepted',
+        # 'ar': 'approach_rejected',
         # 'lo': 'loser',
         # 'wi': 'winner'
         try:
@@ -87,9 +87,9 @@ class OnlineManager:
         else:
             if t == 'gd':  # 게임 데이터일때
                 pass  # 멀티플레이어 인스턴스에 화면 업데이트
-            elif t == 'sa':  # 대결 제안 수락됨
-                pass  # 3초 후에 진행 안내
-            elif t == 'sr':  # 대결 제안 거절됨
+            elif t == 'aa':  # 대결 제안 수락됨
+                pass  # 3초 후에 진행
+            elif t == 'ar':  # 대결 제안 거절됨
                 pass  # 다시 대기 상태
             elif t == 'lo':  # 패배
                 pass  # 패배 화면
@@ -115,55 +115,59 @@ class OnlineManager:
 
     def waiting_list_add(self):
         req = {
-            't': 'wla',
+            't': 'wa',
             'd': None
         }
         self.send_json_req(req)
 
     def waiting_list_remove(self):
         req = {
-            't': 'wlr',
+            't': 'wr',
             'd': None
         }
         self.send_json_req(req)
 
-    def solicit(self, waiter_id: str):
+    def approach(self, waiter_id: str):
         req = {
-            't': 'sc',
+            't': 'a',
             'd': waiter_id
         }
         self.send_json_req(req)
 
-    def solicit_cancel(self):
+    def approach_cancel(self):
         pass
 
-    def solicitee_accept(self, solicitor_id: str):
+    def host_accept(self, approacher_id: str):
         req = {
-            't': 'sa',
-            'd': solicitor_id
+            't': 'aa',
+            'd': approacher_id
         }
         self.send_json_req(req)
 
-    def solicitee_reject(self, solicitor_id: str):
-        pass
+    def host_reject(self, approacher_id: str):
+        req = {
+            't': 'ar',
+            'd': approacher_id
+        }
+        self.send_json_req(req)
 
     def send_current_gd(self):
         current_dict = {
-            't': 'gd',
-            'd': {
-                'id': self.user_id,
-                'score': self.game_instance.score,
-                'level': self.game_instance.level,
-                'goal': self.game_instance.goal,
-                'matrix': self.game_instance.board.temp_matrix,
-                'next_mino_index': self.game_instance.next_mino.shape_index,
-                'hold_mino_index': self.game_instance.hold_mino.shape_index
-            }
+            # 't': 'gd',
+            # 'd': {
+            #     'id': self.user_id,
+            #     'score': self.game_instance.score,
+            #     'level': self.game_instance.level,
+            #     'goal': self.game_instance.goal,
+            #     'matrix': self.game_instance.board.temp_matrix,
+            #     'next_mino_index': self.game_instance.next_mino.shape_index,
+            #     'hold_mino_index': self.game_instance.hold_mino.shape_index
+            # }
         }
         self.send_json_req(current_dict)
 
     def send_current_gd_thread(self):
         while True:
-            if self.game_instance.status == 'in_game':
-                self.send_current_gd()
+            # if self.game_instance.status == 'in_game':
+            #     self.send_current_gd()
             time.sleep(0.1)  # 0.1초마다
