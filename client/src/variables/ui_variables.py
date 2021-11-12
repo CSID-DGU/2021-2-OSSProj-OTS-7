@@ -43,6 +43,9 @@ class UI_VARIABLES:
                 "assets/sounds/BGM_level2.wav",
                 "assets/sounds/BGM_level3.wav",
                 "assets/sounds/BGM_level4.wav"]
+    Bomb_sound = Sound("assets/sounds/SFX_Bomb.wav")
+    Clock_sound = Sound("assets/sounds/SFX_Clock.wav")
+
     # Background colors
     black = (10, 10, 10) #rgb(10, 10, 10)
     white = (255, 255, 255) #rgb(255, 255, 255)
