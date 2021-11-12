@@ -61,15 +61,21 @@ class RedisManager:
 
         self.msg_broker.publish(waiter_id, 'au')  # waiter 에게 approacher 가 바뀜을 알림. todo 알림 user instance로 분리, 스키마 확인
 
-    async def approacher_cancel(self, approacher_id: str, waiter_id: str):
+    async def approacher_del(self, approacher_id: str, waiter_id: str):
         self.waiting.jsondel(name=waiter_id, path=f'.{approacher_id}')
 
-    async def approacher_clear_and_notice(self, waiter_id):
-        self.waiting.jsondel(name=waiter_id)
+    async def approachers_clear_and_notice(self, waiter_id):
+        try:
+            approachers: list = self.waiting.jsonobjkeys(name=waiter_id)
+            for approacher in approachers:
+                self.msg_broker.publish(channel=approacher, message='hr')
+            self.waiting.jsondel(name=waiter_id)
+        except redis.exceptions.ResponseError:
+            print('redis response error! approacher_clear_and_notice()')
 
-    async def match_id_set(self, approacher_id: str, waiter_id: str):  # 매치 id 는 waiter_id, db 업데이트 등 게임 결과 상태 처리는 waiter 쪽 프로세스가 전담.
-        self.match_ids.set(approacher_id, waiter_id)
-        self.match_ids.set(waiter_id, waiter_id)
+    async def match_id_set(self, approacher_id: str, host_id: str):  # 매치 id 는 waiter_id, db 업데이트 등 게임 결과 상태 처리는 waiter 쪽 프로세스가 전담.
+        self.match_ids.set(approacher_id, host_id)
+        self.match_ids.set(host_id, host_id)
 
     async def player_match_id_get(self, player_id: str):  # 플레이어의 매치 id 반환
         return self.match_ids.get(player_id)

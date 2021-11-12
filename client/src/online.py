@@ -13,6 +13,7 @@ from .main import OTS
 # }
 # type list -send
 # t == 'gd':  # game data
+# t == 'go':  # game over
 # t == 'wa':  # waiting add
 # t == 'wr':  # waiting remove
 # t == 'a':  # approach
@@ -70,8 +71,9 @@ class OnlineManager:
         # 'go': 'opponent_game_over',
         # 'mc': 'match_complete',
         # 'gs': 'game_start',
-        # 'aa': 'approach_accepted',
-        # 'ar': 'approach_rejected',
+        # 'ha': 'host_accepted',
+        # 'hr': 'host_rejected',
+        # 'al': 'approacher_list',
         # 'lo': 'loser',
         # 'wi': 'winner'
         try:
@@ -87,9 +89,11 @@ class OnlineManager:
         else:
             if t == 'gd':  # 게임 데이터일때
                 pass  # 멀티플레이어 인스턴스에 화면 업데이트
-            elif t == 'aa':  # 대결 제안 수락됨
+            elif t == 'al':  # 어프로처 리스트
+                pass
+            elif t == 'ha':  # 대결 제안 수락됨
                 pass  # 3초 후에 진행
-            elif t == 'ar':  # 대결 제안 거절됨
+            elif t == 'hr':  # 대결 제안 거절됨
                 pass  # 다시 대기 상태
             elif t == 'lo':  # 패배
                 pass  # 패배 화면
