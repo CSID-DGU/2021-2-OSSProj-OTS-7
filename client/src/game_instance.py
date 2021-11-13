@@ -371,18 +371,15 @@ class GameInstance:
             used_item = self.my_item_list.popleft()  # 먼저 들어온 순서대로 아이템 사용
             if used_item == "bomb":
                 self.item_bomb()
-                pygame.mixer.Sound.play(UI_VARIABLES.Bomb_sound)
             elif used_item == "clock":
                 self.item_clock()
-                pygame.mixer.Sound.play(UI_VARIABLES.Clock_sound)
         else:
-            print('no item left')
+            post_event('NO_ITEM_REMAIN')
 
     def item_bomb(self):
         print('bomb used')
         self.erase_line(20)  # 맨 아랫줄 제거, 화면 업데이트는 self.move() 래퍼 안에서 돌리면 해결됩니다. ev_use_item() 메소드에 넣었습니다.
         post_event('BOMB_USED')
-
 
     def item_clock(self):
         if self.clock_used:
@@ -390,7 +387,7 @@ class GameInstance:
             post_event('NO_ITEM_REMAIN')
         else:
             self.clock_used = True
-
+            post_event('CLOCK_USED')
 
     def count_item_clock(self):
         if self.clock_used and self.clock_count > 0:
