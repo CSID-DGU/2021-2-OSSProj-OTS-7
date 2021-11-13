@@ -30,7 +30,3 @@ custom_events = dict(
     NO_ITEM_REMAIN=USEREVENT + 42,
 )
 
-sound_play_events = dict(
-
-
-)
