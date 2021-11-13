@@ -180,7 +180,7 @@ class EventHandler:
             self.game_instance.ev_timer_event()
 
     def sound_play(self, event_type):
-        if list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "CLOCK_USED":
+        if list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "BOMB_USED":
             pygame.mixer.Sound.play(UI_VARIABLES.Bomb_sound)
         elif list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "CLOCK_USED":
             pygame.mixer.Sound.play(UI_VARIABLES.Clock_sound)
