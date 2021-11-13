@@ -2,7 +2,8 @@ from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
-from .variables.custom_events import custom_events, sound_play_events
+from .variables.custom_events import custom_events
+from .variables.ui_variables import UI_VARIABLES
 
 
 class EventFlags:
@@ -104,11 +105,11 @@ class EventHandler:
 
     def custom_event_init(self):
         map(pygame.event.Event, custom_events.items())  # pygame 이벤트 등록
-        map(pygame.event.Event, sound_play_events.items())  # pygame 이벤트 등록
+        # map(pygame.event.Event, sound_play_events.items())  # pygame 이벤트 등록
 
         allowed_list = [QUIT, KEYUP, KEYDOWN, USEREVENT, VIDEORESIZE]
         allowed_list.extend(list(custom_events.values()))
-        allowed_list.extend(list(sound_play_events.values()))
+        # allowed_list.extend(list(sound_play_events.values()))
 
         pygame.event.set_allowed(allowed_list)  # 처리할 이벤트 종류 제한
 
@@ -127,7 +128,7 @@ class EventHandler:
             self.on_key_down_event(event)
         elif event.type == KEYUP:
             self.on_key_up_event()
-        elif event.type in sound_play_events.values():
+        elif event.type in custom_events.values():
             self.sound_play(event.type)
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
@@ -179,4 +180,9 @@ class EventHandler:
             self.game_instance.ev_timer_event()
 
     def sound_play(self, event_type):
-        pass
+        if list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "CLOCK_USED":
+            pygame.mixer.Sound.play(UI_VARIABLES.Bomb_sound)
+        elif list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "CLOCK_USED":
+            pygame.mixer.Sound.play(UI_VARIABLES.Clock_sound)
+        elif list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "NO_ITEM_REMAIN":
+            pygame.mixer.Sound.play(UI_VARIABLES.NoItem_sound)

@@ -6,6 +6,7 @@ from random import randint, choice
 from .components.mino import Mino
 from .variables.custom_events import custom_events
 from .variables import timer_variables as tv
+from .variables.ui_variables import UI_VARIABLES
 
 
 def new_mino():
@@ -206,7 +207,6 @@ class GameInstance:
 
     def ev_use_item(self):
         self.move(self.use_item)
-
     # ############ 이하 동작 메소드 #############
     def move_down(self):
         self.y += 1
@@ -374,7 +374,7 @@ class GameInstance:
             elif used_item == "clock":
                 self.item_clock()
         else:
-            print('no item left')
+            post_event('NO_ITEM_REMAIN')
 
     def item_bomb(self):
         print('bomb used')
@@ -387,6 +387,7 @@ class GameInstance:
             post_event('NO_ITEM_REMAIN')
         else:
             self.clock_used = True
+            post_event('CLOCK_USED')
 
     def count_item_clock(self):
         if self.clock_used and self.clock_count > 0:
