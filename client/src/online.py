@@ -3,7 +3,6 @@ import time
 import threading
 import json
 import pprint
-from .main import OTS
 
 # server side code scheme
 # 't': # type
