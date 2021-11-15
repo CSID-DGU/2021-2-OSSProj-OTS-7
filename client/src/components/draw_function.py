@@ -49,11 +49,11 @@ def draw_game_instance(game_instance, screen, x_mod=0):
     )
 
     # draw next_mino
-    draw_mino(220+x_mod, 85, game_instance.next_mino, 0, screen)
+    draw_mino(220+x_mod, 90, game_instance.next_mino, 0, screen)
 
     # draw hold_mino
     if game_instance.hold_mino is not None:
-        draw_mino(220+x_mod, 50, game_instance.hold_mino, 0, screen)
+        draw_mino(220+x_mod, 30, game_instance.hold_mino, 0, screen)
 
     # Set max score
     if game_instance.score > 999999:
@@ -101,8 +101,8 @@ def draw_game_instance(game_instance, screen, x_mod=0):
 
 
     # Place texts
-    screen.blit(text_hold, (x_mod+215, 14))
-    screen.blit(text_next, (x_mod+215, 54))
+    screen.blit(text_hold, (x_mod+215, 15))
+    screen.blit(text_next, (x_mod+215, 70))
     screen.blit(text_score, (x_mod+215, 134))
     screen.blit(score_value, (x_mod+220, 154))
     screen.blit(text_level, (x_mod+215, 194))
