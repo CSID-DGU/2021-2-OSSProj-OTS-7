@@ -1,5 +1,4 @@
-
-# OSS Notice | 2021-2-OSSProj-OTS-7 #
+# OSS Notice | OTS-Web #
 
 This application is Copyright © (Team OTS). All rights reserved.
 

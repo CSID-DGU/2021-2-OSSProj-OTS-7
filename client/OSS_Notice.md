@@ -1,7 +1,6 @@
+# OSS Notice | OTS-Client #
 
-# OSS Notice | 2021-2-OSSProj-OTS-7 #
-
-This application is Copyright © (Team OTS). All rights reserved.
+This application is Copyright © Team OTS. All rights reserved.
 
 The following sets forth attribution notices for third party software that may be contained in this application.
 
