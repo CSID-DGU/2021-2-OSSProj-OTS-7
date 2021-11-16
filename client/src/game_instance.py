@@ -4,7 +4,7 @@ from .components.board import Board
 import copy
 from random import randint, choice
 from .components.mino import Mino
-from client.src.consts.custom_events import custom_events
+from .consts.custom_events import custom_events
 from .consts import timer_consts as tv
 
 

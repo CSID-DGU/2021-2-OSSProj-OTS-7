@@ -1,5 +1,5 @@
 from .mino_shape import mino_map
-from client.src.consts.ui_consts import UI_CONSTS
+from ..consts.ui_consts import UI_CONSTS
 
 
 class Mino:

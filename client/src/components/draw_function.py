@@ -1,6 +1,6 @@
 import pygame
 from pygame.draw import rect
-from client.src.consts.ui_consts import UI_CONSTS as CONSTS
+from ..consts.ui_consts import UI_CONSTS as CONSTS
 from ..components.fonts import FONTS
 from ..consts.asset_paths import Path
 from .mino import Mino

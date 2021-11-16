@@ -2,7 +2,7 @@ from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
-from client.src.consts.custom_events import custom_events, custom_events_reversed
+from .consts.custom_events import custom_events, custom_events_reversed
 from .components.sounds import SOUNDS
 
 

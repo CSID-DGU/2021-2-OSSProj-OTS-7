@@ -1,7 +1,7 @@
 import pygame
 
 from .components import draw_function
-from client.src.consts.ui_consts import UI_CONSTS
+from .consts.ui_consts import UI_CONSTS
 from .components.fonts import FONTS
 from pygame import Rect
 

@@ -1,4 +1,7 @@
-from src.launcher import Launcher
+try:
+    from client.src.launcher import Launcher
+except ModuleNotFoundError:
+    from src.launcher import Launcher
 
 if __name__ == '__main__':
     lc = Launcher()
