@@ -1,6 +1,6 @@
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
-from .variables.ui_variables import UI_VARIABLES as uv
+from .consts.asset_paths import Path as Path
 from .main import OTS
 import webbrowser
 import sys
@@ -21,7 +21,7 @@ class Launcher(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setWindowTitle('OTS')
-        self.setWindowIcon(QIcon(QPixmap(uv.tetris_image)))
+        self.setWindowIcon(QIcon(QPixmap(Path.tetris_image)))
 
         self.single_btn = QPushButton("Single play")
         self.single_btn.clicked.connect(self.single_btn_clicked)

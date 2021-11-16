@@ -1,12 +1,14 @@
 import pygame
 from pygame.draw import rect
-from ..variables.ui_variables import UI_VARIABLES
+from ..consts.ui_consts import UI_CONSTS as CONSTS
+from ..components.fonts import FONTS
+from ..consts.asset_paths import Path
 from .mino import Mino
 from pygame import Rect
 
 # screen = pygame.display.set_mode((300, 374))
 # 멀티플레이시 screen 만 나눠서 사용 가능할듯
-BLOCK_SIZE: int = UI_VARIABLES.init_block_size
+BLOCK_SIZE: int = CONSTS.init_block_size
 
 
 # 정사각형 그리는 코드
@@ -25,7 +27,7 @@ def draw_block(x: int, y: int, color: int, screen):
     # 외곽선
     rect(
         screen,
-        UI_VARIABLES.grey_1,
+        CONSTS.grey_1,
         Rect(x, y, BLOCK_SIZE, BLOCK_SIZE),
         1
     )
@@ -45,7 +47,7 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
     # sidebar
     rect(
         screen,
-        UI_VARIABLES.white,
+        CONSTS.white,
         Rect(204+x_mod, 0, 96, 374)
     )
 
@@ -60,11 +62,11 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
     if game_instance.score > 999999:
         score = 999999
     # item image
-    bomb_image = pygame.image.load("assets/img/bomb.png")
+    bomb_image = pygame.image.load(Path.bomb_image)
     bomb_image = pygame.transform.scale(bomb_image, (30, 30))
     left_bomb = pygame.transform.scale(bomb_image, (15, 15))
 
-    clock_image = pygame.image.load("assets/img/clock.png")
+    clock_image = pygame.image.load(Path.clock_image)
     clock_image = pygame.transform.scale(clock_image, (30, 30))
     left_clock = pygame.transform.scale(clock_image, (15, 15))
 
@@ -80,15 +82,15 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
 
     # texts
     # TODO 하드코딩 수정할것
-    text_hold = UI_VARIABLES.h5.render("HOLD", 1, UI_VARIABLES.black)
-    text_next = UI_VARIABLES.h5.render("NEXT", 1, UI_VARIABLES.black)
-    text_score = UI_VARIABLES.h5.render("SCORE", 1, UI_VARIABLES.black)
-    score_value = UI_VARIABLES.h4.render(str(game_instance.score), 1, UI_VARIABLES.black)
-    text_level = UI_VARIABLES.h5.render("LEVEL", 1, UI_VARIABLES.black)
-    level_value = UI_VARIABLES.h4.render(str(game_instance.level), 1, UI_VARIABLES.black)
-    text_goal = UI_VARIABLES.h5.render("GOAL", 1, UI_VARIABLES.black)
-    goal_value = UI_VARIABLES.h4.render(str(game_instance.goal), 1, UI_VARIABLES.black)
-    text_item = UI_VARIABLES.h5.render("ITEM    LEFT", 1, UI_VARIABLES.black)
+    text_hold = FONTS.h5.render("HOLD", 1, CONSTS.black)
+    text_next = FONTS.h5.render("NEXT", 1, CONSTS.black)
+    text_score = FONTS.h5.render("SCORE", 1, CONSTS.black)
+    score_value = FONTS.h4.render(str(game_instance.score), 1, CONSTS.black)
+    text_level = FONTS.h5.render("LEVEL", 1, CONSTS.black)
+    level_value = FONTS.h4.render(str(game_instance.level), 1, CONSTS.black)
+    text_goal = FONTS.h5.render("GOAL", 1, CONSTS.black)
+    goal_value = FONTS.h4.render(str(game_instance.goal), 1, CONSTS.black)
+    text_item = FONTS.h5.render("ITEM    LEFT", 1, CONSTS.black)
 
     bomb_count = 0
     clock_count = 0
@@ -96,8 +98,8 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
         bomb_count = game_instance.my_item_list.count('bomb')
         clock_count = game_instance.my_item_list.count('clock')
 
-    left_item_bomb = UI_VARIABLES.h6.render("x " + str(bomb_count), 1, UI_VARIABLES.black)
-    left_item_clock = UI_VARIABLES.h6.render("x " + str(clock_count), 1, UI_VARIABLES.black)
+    left_item_bomb = FONTS.h6.render("x " + str(bomb_count), 1, CONSTS.black)
+    left_item_clock = FONTS.h6.render("x " + str(clock_count), 1, CONSTS.black)
 
     # draw texts to screen
     screen.blit(text_hold, (x_mod+215, 15))
@@ -113,16 +115,16 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
     screen.blit(left_item_clock, (x_mod + 275, 355))
 
     # draw board to screen
-    for x in range(UI_VARIABLES.init_board_width):
-        for y in range(UI_VARIABLES.init_board_height):
+    for x in range(CONSTS.init_board_width):
+        for y in range(CONSTS.init_board_height):
             dx = x_mod + 17 + BLOCK_SIZE * x
             dy = 17 + BLOCK_SIZE * y
-            draw_block(dx, dy, UI_VARIABLES.t_color[game_instance.board.temp_matrix[x][y + 1]], screen)
+            draw_block(dx, dy, CONSTS.t_color[game_instance.board.temp_matrix[x][y + 1]], screen)
 
 
 # Draw game screen
 def draw_in_game_screen(game_instance, screen, multiplayer_instance=None):
-    screen.fill(UI_VARIABLES.grey_1)
+    screen.fill(CONSTS.grey_1)
 
     draw_game_instance(game_instance=game_instance, screen=screen)
     if multiplayer_instance is not None:
