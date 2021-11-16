@@ -2,22 +2,22 @@ from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
-from .variables.custom_events import custom_events
-from .variables.ui_variables import UI_VARIABLES
+from client.src.consts.custom_events import custom_events, custom_events_reversed
+from .components.sounds import SOUNDS
 
 
 class EventFlags:
     def __init__(self):
         self.buffer = 3
         self.dict = {
-            'down': 3,
-            'up': 3,
-            'right': 3,
-            'left': 3,
-            'hard_drop': 3,
-            'pause': 3,
-            'hold': 3,
-            'use_item': 3
+            'down': self.buffer,
+            'up': self.buffer,
+            'right': self.buffer,
+            'left': self.buffer,
+            'hard_drop': self.buffer,
+            'pause': self.buffer,
+            'hold': self.buffer,
+            'use_item': self.buffer
         }
 
     def reset(self):
@@ -129,7 +129,7 @@ class EventHandler:
         elif event.type == KEYUP:
             self.on_key_up_event()
         elif event.type in custom_events.values():
-            self.sound_play(event.type)
+            self.play_sfx(event.type)
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
             self.quit = True
@@ -179,10 +179,12 @@ class EventHandler:
         if self.game_instance.status == 'in_game':
             self.game_instance.ev_timer_event()
 
-    def sound_play(self, event_type):
-        if list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "BOMB_USED":
-            pygame.mixer.Sound.play(UI_VARIABLES.Bomb_sound)
-        elif list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "CLOCK_USED":
-            pygame.mixer.Sound.play(UI_VARIABLES.Clock_sound)
-        elif list(custom_events.keys())[list(custom_events.values()).index(event_type)] == "NO_ITEM_REMAIN":
-            pygame.mixer.Sound.play(UI_VARIABLES.NoItem_sound)
+    @staticmethod
+    def play_sfx(event_type):
+        event = custom_events_reversed.get(event_type)
+        if event == "BOMB_USED":
+            pygame.mixer.Sound.play(SOUNDS.sfx_bomb)
+        elif event == "CLOCK_USED":
+            pygame.mixer.Sound.play(SOUNDS.sfx_clock)
+        elif event == "NO_ITEM_REMAIN":
+            pygame.mixer.Sound.play(SOUNDS.sfx_no_item)

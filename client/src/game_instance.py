@@ -4,9 +4,8 @@ from .components.board import Board
 import copy
 from random import randint, choice
 from .components.mino import Mino
-from .variables.custom_events import custom_events
-from .variables import timer_variables as tv
-from .variables.ui_variables import UI_VARIABLES
+from client.src.consts.custom_events import custom_events
+from .consts import timer_consts as tv
 
 
 def new_mino():

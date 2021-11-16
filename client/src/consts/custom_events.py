@@ -30,3 +30,6 @@ custom_events = dict(
     NO_ITEM_REMAIN=USEREVENT + 42,
 )
 
+custom_events_reversed = {}
+for key, val in custom_events.items():
+    custom_events_reversed[val] = key
