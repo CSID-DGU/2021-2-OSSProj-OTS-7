@@ -6,27 +6,27 @@ from pygame import Rect
 
 # screen = pygame.display.set_mode((300, 374))
 # 멀티플레이시 screen 만 나눠서 사용 가능할듯
-block_size = UI_VARIABLES.init_block_size
+BLOCK_SIZE: int = UI_VARIABLES.init_block_size
 
 
 # 정사각형 그리는 코드
-def draw_rect(x, y, color, screen):
+def draw_rect(x: int, y: int, color: int, screen):
     rect(
         screen,
         color,
-        Rect(x, y, block_size, block_size)
+        Rect(x, y, BLOCK_SIZE, BLOCK_SIZE)
     )
 
 
 # 외곽선을 포함하여 정사각형 그리는 코드
-def draw_block(x, y, color, screen):
+def draw_block(x: int, y: int, color: int, screen):
     # 정사각형
     draw_rect(x, y, color, screen)
     # 외곽선
     rect(
         screen,
         UI_VARIABLES.grey_1,
-        Rect(x, y, block_size, block_size),
+        Rect(x, y, BLOCK_SIZE, BLOCK_SIZE),
         1
     )
 
@@ -35,12 +35,13 @@ def draw_block(x, y, color, screen):
 def draw_mino(x: int, y: int, mino: Mino, rotate: int, screen):
     for i in range(4):
         for j in range(4):
-            dx = x + block_size * j
-            dy = y + block_size * i
+            dx = x + BLOCK_SIZE * j
+            dy = y + BLOCK_SIZE * i
             if mino.shape[rotate][i][j] != 0:
                 draw_rect(dx, dy, mino.color, screen)
 
-def draw_game_instance(game_instance, screen, x_mod=0):
+
+def draw_game_instance(game_instance, screen, x_mod: int = 0):
     # sidebar
     rect(
         screen,
@@ -77,8 +78,7 @@ def draw_game_instance(game_instance, screen, x_mod=0):
     screen.blit(left_bomb, [x_mod + 255, 335])
     screen.blit(left_clock, [x_mod + 255, 355])
 
-
-    # Draw texts
+    # texts
     # TODO 하드코딩 수정할것
     text_hold = UI_VARIABLES.h5.render("HOLD", 1, UI_VARIABLES.black)
     text_next = UI_VARIABLES.h5.render("NEXT", 1, UI_VARIABLES.black)
@@ -99,8 +99,7 @@ def draw_game_instance(game_instance, screen, x_mod=0):
     left_item_bomb = UI_VARIABLES.h6.render("x " + str(bomb_count), 1, UI_VARIABLES.black)
     left_item_clock = UI_VARIABLES.h6.render("x " + str(clock_count), 1, UI_VARIABLES.black)
 
-
-    # Place texts
+    # draw texts to screen
     screen.blit(text_hold, (x_mod+215, 15))
     screen.blit(text_next, (x_mod+215, 70))
     screen.blit(text_score, (x_mod+215, 134))
@@ -113,12 +112,11 @@ def draw_game_instance(game_instance, screen, x_mod=0):
     screen.blit(left_item_bomb, (x_mod + 275, 335))
     screen.blit(left_item_clock, (x_mod + 275, 355))
 
-
-    # Draw board
+    # draw board to screen
     for x in range(UI_VARIABLES.init_board_width):
         for y in range(UI_VARIABLES.init_board_height):
-            dx = x_mod+17 + block_size * x
-            dy = 17 + block_size * y
+            dx = x_mod + 17 + BLOCK_SIZE * x
+            dy = 17 + BLOCK_SIZE * y
             draw_block(dx, dy, UI_VARIABLES.t_color[game_instance.board.temp_matrix[x][y + 1]], screen)
 
 
