@@ -7,6 +7,6 @@ You can install pyinstaller using pip.
 /path/to/client$ pip install pyinstaller
 
 Build with this command.
-/path/to/client$ pyinstaller -w --one-file run_client.py
+/path/to/client$ pyinstaller -w -F run_client.py
 
 You have to put the result binary file and 'assets' folder in the same directory to run it properly.
