@@ -11,7 +11,6 @@ class DisplayDrawer:
         self.game_instance = game_instance
         self.multiplayer_instance = multiplayer_instance
         self.screen = self.get_screen()
-        self.fake_screen = self.screen.copy()
 
     # 싱글플레이 멀티플레이 화면 크기
     def get_screen(self):
