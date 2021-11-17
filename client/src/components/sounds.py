@@ -12,5 +12,5 @@ class SOUNDS:
     sfx_tetris = Sound(Path.sfx_tetris)
 
     sfx_bomb = Sound(Path.sfx_bomb)
-    sfx_clock = Sound(Path.sfx_bomb)
+    sfx_clock = Sound(Path.sfx_clock)
     sfx_no_item = Sound(Path.sfx_no_item)
