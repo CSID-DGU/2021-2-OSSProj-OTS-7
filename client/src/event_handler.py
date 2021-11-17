@@ -2,7 +2,7 @@ from .game_instance import GameInstance
 from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
-from .consts.custom_events import custom_events, custom_events_reversed
+from .consts.custom_events import CUSTOM_EVENTS, CUSTOM_EVENTS_REVERSED
 from .components.sounds import SOUNDS
 
 
@@ -104,11 +104,11 @@ class EventHandler:
         self.quit = False
 
     def custom_event_init(self):
-        map(pygame.event.Event, custom_events.items())  # pygame 이벤트 등록
+        map(pygame.event.Event, CUSTOM_EVENTS.items())  # pygame 이벤트 등록
         # map(pygame.event.Event, sound_play_events.items())  # pygame 이벤트 등록
 
         allowed_list = [QUIT, KEYUP, KEYDOWN, USEREVENT, VIDEORESIZE]
-        allowed_list.extend(list(custom_events.values()))
+        allowed_list.extend(list(CUSTOM_EVENTS.values()))
         # allowed_list.extend(list(sound_play_events.values()))
 
         pygame.event.set_allowed(allowed_list)  # 처리할 이벤트 종류 제한
@@ -121,14 +121,14 @@ class EventHandler:
             self.execute_event()
             self.check_key_held()
 
-        elif event.type == custom_events['DISPLAY_UPDATE_REQUIRED']:  # 화면 업데이트
+        elif event.type == CUSTOM_EVENTS['DISPLAY_UPDATE_REQUIRED']:  # 화면 업데이트
             # self.display_drawer.update_display()
             pass
         elif event.type == KEYDOWN:  # 키 입력 이벤트. KEYDOWN은 키가 눌렸을 때, KEYUP은 키가 눌린 후 다시 올라왔을때
             self.on_key_down_event(event)
         elif event.type == KEYUP:
             self.on_key_up_event()
-        elif event.type in custom_events.values():
+        elif event.type in CUSTOM_EVENTS.values():
             self.play_sfx(event.type)
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
@@ -181,7 +181,7 @@ class EventHandler:
 
     @staticmethod
     def play_sfx(event_type):
-        event = custom_events_reversed.get(event_type)
+        event = CUSTOM_EVENTS_REVERSED.get(event_type)
         if event == "BOMB_USED":
             pygame.mixer.Sound.play(SOUNDS.sfx_bomb)
         elif event == "CLOCK_USED":
