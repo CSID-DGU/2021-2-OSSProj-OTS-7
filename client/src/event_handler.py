@@ -197,3 +197,6 @@ class EventHandler:
             pygame.mixer.Sound.play(SOUNDS.sfx_triple)
         elif event == "LINE_ERASED_4":
             pygame.mixer.Sound.play(SOUNDS.sfx_tetris)
+
+        elif event == "MOVE":
+            pygame.mixer.Sound.play(SOUNDS.sfx_move)

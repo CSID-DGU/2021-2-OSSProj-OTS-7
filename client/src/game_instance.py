@@ -174,10 +174,12 @@ class GameInstance:
     def ev_move_left(self):
         if not self.is_left_collide():
             self.move(self.move_left)
+            post_event("MOVE")
 
     def ev_move_right(self):
         if not self.is_right_collide():
             self.move(self.move_right)
+            post_event("MOVE")
 
     # 우측 회전, mod_list 는 현재 미노의 x, y 값을 조금씩 조정했을 때 회전이 가능한지를 판별하기 위함.
     def ev_rotate_right(self):
