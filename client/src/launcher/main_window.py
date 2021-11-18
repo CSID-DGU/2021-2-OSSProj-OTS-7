@@ -1,12 +1,14 @@
 import threading
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
-from .consts.asset_paths import Path as Path
-from .main import OTS
-from .game_instance import GameInstance
-from .display_drawer import DisplayDrawer
-from .event_handler import EventHandler
-from .online_handler import OnlineHandler
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, \
+    QLabel
+from client.src.consts.asset_paths import Path as Path
+from client.src.main import OTS
+from client.src.game_instance import GameInstance
+from client.src.display_drawer import DisplayDrawer
+from client.src.event_handler import EventHandler
+from client.src.online_handler import OnlineHandler
+from .login_window import login_window
 import webbrowser
 import sys
 
@@ -18,6 +20,7 @@ class Launcher(QWidget):
         self.game_mode = None
         self.player_id = 'offline'
         self.initialize()
+        self.lw = login_window()
 
     def initialize(self):
 
@@ -64,9 +67,11 @@ class Launcher(QWidget):
         sys.exit(self.app.exec_())
 
     def online_btn_clicked(self):
-        self.set_launch_btns_disabled()
-        t = threading.Thread(target=self.run_online)
-        t.start()
+
+        self.lw.show()
+        # self.set_launch_btns_disabled()
+        # t = threading.Thread(target=self.run_online)
+        # t.start()
 
     def signup_btn_clicked(self):
         webbrowser.open("https://ots.prvt.dev/")
@@ -76,7 +81,6 @@ class Launcher(QWidget):
 
     def run_launcher(self):
         self.app.exec_()
-
     # 이하 ots 세팅, 실행 코드
     def init_objs(self, is_mp: bool):
         if not is_mp:
