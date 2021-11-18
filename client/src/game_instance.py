@@ -199,10 +199,11 @@ class GameInstance:
             self.move(self.hold_current_mino)
 
     def ev_pause_game(self):
-        if self.status == 'in_game':
-            self.status = 'pause'
-        elif self.status == 'pause':
-            self.status = 'in_game'
+        if not self.is_multiplayer:
+            if self.status == 'in_game':
+                self.status = 'pause'
+            elif self.status == 'pause':
+                self.status = 'in_game'
 
     def ev_use_item(self):
         self.move(self.use_item)
@@ -397,4 +398,5 @@ class GameInstance:
 
     # 게임 오버시
     def on_game_over(self):
-        self.reset()
+        if not self.is_multiplayer:
+            self.reset()
