@@ -4,7 +4,7 @@ from .components.board import Board
 import copy
 from random import randint, choice
 from .components.mino import Mino
-from .consts.custom_events import custom_events
+from .consts.custom_events import CUSTOM_EVENTS
 from .consts import timer_consts as tv
 
 
@@ -13,7 +13,7 @@ def new_mino():
 
 
 def post_event(custom_event):  # variables/custom_events 참조
-    pygame.event.post(pygame.event.Event(custom_events[custom_event]))
+    pygame.event.post(pygame.event.Event(CUSTOM_EVENTS[custom_event]))
     pass
 
 
@@ -23,7 +23,7 @@ class GameInstance:
 
         self.is_multiplayer = is_multiplayer  # 멀티플레이어 여부
 
-        self.item_list = ["bomb", "clock"]  # 가능한 아이템 종류
+        self.item_list = ("bomb", "clock")  # 가능한 아이템 종류
         self.my_item_list = deque([])  # 아이템 보유 리스트, popleft 로 선입선출 사용
         self.clock_used = False  # 클락 아이템 사용 여부
         self.clock_count = tv.BASE_CLOCK_COUNT  # 30초, 이벤트는 0.05초마다 생성
@@ -199,10 +199,11 @@ class GameInstance:
             self.move(self.hold_current_mino)
 
     def ev_pause_game(self):
-        if self.status == 'in_game':
-            self.status = 'pause'
-        elif self.status == 'pause':
-            self.status = 'in_game'
+        if not self.is_multiplayer:
+            if self.status == 'in_game':
+                self.status = 'pause'
+            elif self.status == 'pause':
+                self.status = 'in_game'
 
     def ev_use_item(self):
         self.move(self.use_item)
@@ -397,4 +398,5 @@ class GameInstance:
 
     # 게임 오버시
     def on_game_over(self):
-        self.reset()
+        if not self.is_multiplayer:
+            self.reset()

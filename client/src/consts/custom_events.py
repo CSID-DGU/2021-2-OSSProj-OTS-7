@@ -1,6 +1,6 @@
 from pygame.locals import USEREVENT
 
-custom_events = dict(
+CUSTOM_EVENTS = dict(
     # 상태 업데이트
     DISPLAY_UPDATE_REQUIRED=USEREVENT + 1,
     LEVEL_UP=USEREVENT + 2,
@@ -30,6 +30,6 @@ custom_events = dict(
     NO_ITEM_REMAIN=USEREVENT + 42,
 )
 
-custom_events_reversed = {}
-for key, val in custom_events.items():
-    custom_events_reversed[val] = key
+CUSTOM_EVENTS_REVERSED = {}
+for key, val in CUSTOM_EVENTS.items():
+    CUSTOM_EVENTS_REVERSED[val] = key

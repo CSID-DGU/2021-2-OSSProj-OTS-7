@@ -1,10 +1,14 @@
+import threading
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
 from .consts.asset_paths import Path as Path
 from .main import OTS
+from .game_instance import GameInstance
+from .display_drawer import DisplayDrawer
+from .event_handler import EventHandler
+from .online_handler import OnlineHandler
 import webbrowser
 import sys
-
 
 
 class Launcher(QWidget):
@@ -44,20 +48,25 @@ class Launcher(QWidget):
         self.layout.addWidget(self.help_btn)
         self.show()
 
+    def set_launch_btns_disabled(self):
+        self.single_btn.setDisabled(1)
+        self.dual_btn.setDisabled(1)
+        self.online_btn.setDisabled(1)
+
     def single_btn_clicked(self):
-        self.game_mode = 'single'
-        self.run_game()
-        sys.exit(self.app.exec_())
+        self.set_launch_btns_disabled()
+        t = threading.Thread(target=self.run_game)
+        t.start()
 
     def dual_btn_clicked(self):
-        self.game_mode = 'dual'
-        self.run_game()
+        self.set_launch_btns_disabled()
+        print('추가예정')
         sys.exit(self.app.exec_())
 
     def online_btn_clicked(self):
-        self.game_mode = 'online'
-        self.run_game()
-        sys.exit(self.app.exec_())
+        self.set_launch_btns_disabled()
+        t = threading.Thread(target=self.run_online)
+        t.start()
 
     def signup_btn_clicked(self):
         webbrowser.open("https://ots.prvt.dev/")
@@ -68,6 +77,28 @@ class Launcher(QWidget):
     def run_launcher(self):
         self.app.exec_()
 
+    # 이하 ots 세팅, 실행 코드
+    def init_objs(self, is_mp: bool):
+        if not is_mp:
+            gi = GameInstance()
+            oi = None
+        else:
+            gi = GameInstance(is_multiplayer=True)
+            oi = GameInstance()
+        dd = DisplayDrawer(game_instance=gi, multiplayer_instance=oi)
+        eh = EventHandler(game_instance=gi, display_drawer=dd)
+        ots = OTS(game_instance=gi, display_drawer=dd, event_handler=eh)
+        if is_mp:
+            oh = OnlineHandler(user_id=self.player_id, game_instance=gi, opponent_instance=oi)
+        else:
+            oh = None
+        return ots, oh
+
     def run_game(self):
-        ots = OTS(game_mode=self.game_mode, player_id=self.player_id)
+        ots, oh = self.init_objs(is_mp=False)
+        ots.main_loop()
+
+    def run_online(self):
+        ots, oh = self.init_objs(is_mp=True)
+        oh.ws_thread.start()
         ots.main_loop()
