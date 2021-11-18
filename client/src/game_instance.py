@@ -239,6 +239,7 @@ class GameInstance:
         while not self.is_bottom_collide(self.x, self.y):
             self.move(self.move_down)
         self.freeze_current_mino()
+        post_event("HARD_DROP")
 
     # 현재 미노를 hold
     def hold_current_mino(self):

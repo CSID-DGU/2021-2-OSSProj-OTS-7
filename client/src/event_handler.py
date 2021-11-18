@@ -200,3 +200,5 @@ class EventHandler:
 
         elif event == "MOVE":
             pygame.mixer.Sound.play(SOUNDS.sfx_move)
+        elif event == "HARD_DROP":
+            pygame.mixer.Sound.play(SOUNDS.sfx_drop)
