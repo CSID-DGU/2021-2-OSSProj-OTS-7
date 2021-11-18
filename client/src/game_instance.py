@@ -277,6 +277,14 @@ class GameInstance:
             if self.is_y_line_full(y_index=y):  # line 이 full 이면 line count 값 1 더하고 라인 지움
                 line_count += 1
                 self.erase_line(y_index=y)
+                if line_count == 1:
+                    post_event("LINE_ERASED")
+                elif line_count == 2:
+                    post_event("LINE_ERASED_2")
+                elif line_count == 3:
+                    post_event("LINE_ERASED_3")
+                elif line_count == 4:
+                    post_event("LINE_ERASED_4")
 
         score_list = (50, 150, 350, 1000)  # 분리 필요
 

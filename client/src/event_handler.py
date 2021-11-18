@@ -188,3 +188,12 @@ class EventHandler:
             pygame.mixer.Sound.play(SOUNDS.sfx_clock)
         elif event == "NO_ITEM_REMAIN":
             pygame.mixer.Sound.play(SOUNDS.sfx_no_item)
+
+        elif event == "LINE_ERASED":
+            pygame.mixer.Sound.play(SOUNDS.sfx_single)
+        elif event == "LINE_ERASED_2":
+            pygame.mixer.Sound.play(SOUNDS.sfx_double)
+        elif event == "LINE_ERASED_3":
+            pygame.mixer.Sound.play(SOUNDS.sfx_triple)
+        elif event == "LINE_ERASED_4":
+            pygame.mixer.Sound.play(SOUNDS.sfx_tetris)
