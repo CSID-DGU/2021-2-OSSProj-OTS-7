@@ -3,7 +3,7 @@ from PySide2.QtWidgets import QWidget, QApplication, QVBoxLayout, QLabel, \
 from .online_queue import online_queue
 import json, requests
 import sys
-
+from ..consts.asset_paths import Path
 
 class login_window(QWidget):
     def __init__(self):
@@ -11,7 +11,7 @@ class login_window(QWidget):
         self.initialize()
         self.oq = online_queue()
     def initialize(self):
-        self.login_url = "http://localhost:8080/users/login" # 차후변경
+        self.login_url = Path.login_url # 차후변경
         self.layout = QVBoxLayout()
         self.label = QLabel("please login")
         self.layout.addWidget(self.label)

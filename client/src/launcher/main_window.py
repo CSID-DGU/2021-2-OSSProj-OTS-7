@@ -9,6 +9,7 @@ from ..display_drawer import DisplayDrawer
 from ..event_handler import EventHandler
 from ..online_handler import OnlineHandler
 from .login_window import login_window
+from ..consts.asset_paths import Path
 import webbrowser
 import sys
 
@@ -74,10 +75,10 @@ class Launcher(QWidget):
         # t.start()
 
     def signup_btn_clicked(self):
-        webbrowser.open("https://ots.prvt.dev/")
+        webbrowser.open(Path.signup_url)
 
     def help_btn_clicked(self):
-        webbrowser.open("https://github.com/CSID-DGU/2021-2-OSSProj-OTS-7/blob/main/client/assets/img/help.png?raw=true")
+        webbrowser.open(Path.help_image_url)
 
     def run_launcher(self):
         self.app.exec_()

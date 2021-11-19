@@ -28,3 +28,7 @@ class Path:
     font_path_b = "assets/fonts/OpenSans-Bold.ttf"
     font_path_i = "assets/fonts/Inconsolata/Inconsolata.otf"
 
+    # url
+    login_url = "http://localhost:8080/users/login"
+    signup_url = "http://localhost:8080/"
+    help_image_url = "https://github.com/CSID-DGU/2021-2-OSSProj-OTS-7/blob/main/client/assets/img/help.png?raw=true"
