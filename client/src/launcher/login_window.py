@@ -32,8 +32,9 @@ class login_window(QWidget):
 
     def login_btn_clicked(self):
         self.res = requests.post(self.login_url, data={'email': self.input_email.text(), 'password' : self.input_pwd.text()})
-        if(self.res.json()['msg'] == "success"):
+        if(self.res.json()['msg'] != "failed"):
             print("login")
+            print(f"name :  {self.res.json()}")
             self.oq.show()
         else:
             print("fail")
