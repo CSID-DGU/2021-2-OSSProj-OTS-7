@@ -15,9 +15,10 @@ window.onload = () => {
             })
             .then(res => res.json())
             .then(json => {
-                if(json.msg==="success"){
-                    alert("success Logout");
-                    window.location.href ='/';
+                if(json.msg !="failed"){
+                alert("success Logout");
+                                    window.location.href ='/';
+
                 }else{
                     alert("failed Logout");
                 }
