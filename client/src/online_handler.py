@@ -2,24 +2,35 @@ import websocket
 import time
 import threading
 import json
-import pprint
 from .game_instance import GameInstance
 from .components.mino import Mino
-# server side code scheme
-# 't': # type
-# {
-#     't': code,
-#     'd': data
-# }
-# type list -send
-# t == 'gd':  # game data
-# t == 'go':  # game over
-# t == 'wa':  # waiting add
-# t == 'wr':  # waiting remove
-# t == 'a':  # approach
-# t == 'ac':  # approach cancel
-# t == 'aa':  # host accept
-# t == 'ar':  # host reject
+
+# receiving codes
+RCODES = {
+    'game_data': 'gd',
+    'game_over': 'go',
+    'match_set': 'ms',
+    'match_complete': 'mc',
+    'game_start': 'gs',
+    'waiter_list': 'wl',
+    'host_accepted': 'ha',
+    'host_rejected': 'hr',
+    'approacher_list': 'al',
+    'lose': 'lo',
+    'win': 'wi'
+}
+
+# sending codes
+SCODES = {
+    'game_data': 'gd',
+    'game_over': 'go',
+    'waiting_list_add': 'wa',
+    'waiting_list_remove': 'wr',
+    'approach': 'a',
+    'approach_cancel': 'ac',
+    'host_accept': 'ha',
+    'host_reject': 'hr',
+}
 
 
 def on_error(ws, error):
@@ -47,8 +58,8 @@ class OnlineHandler:
             on_error=on_error,
             on_close=on_close,
         )
-        self.ws_thread = threading.Thread(target=self.run_forever, daemon=True)  # 웹 소켓 연결 스레드
-        self.send_gd_thread = threading.Thread(target=self.send_current_gd_thread, daemon=True)  # 게임 데이터 전송 스레드
+        self.ws_thread = threading.Thread(target=self.ws_connect, daemon=True)  # 웹 소켓 연결 스레드
+        self.s_game_data_thread = threading.Thread(target=self.s_game_data_loop, daemon=True)  # 게임 데이터 전송 스레드
 
     def on_open(self, ws):
         ws.send(self.user_id)
@@ -63,18 +74,20 @@ class OnlineHandler:
             print('message not in json format')
 
         if raw_data is not None:
-            self.parse_data(raw_data)
+            self.r_parse_data(raw_data)
 
-    def parse_data(self, raw_data):
-        # type list -receive
-        # 'go': 'opponent_game_over',
-        # 'mc': 'match_complete',
-        # 'ha': 'host_accepted',
-        # 'hr': 'host_rejected',
-        # 'al': 'approacher_list',
-        # 'wl': 'waiter_list
-        # 'lo': 'loser',
-        # 'wi': 'winner'
+    # 웹소켓 연결
+    def ws_connect(self):
+        self.ws.run_forever()
+
+    # 게임 인스턴스들 초기화
+    def reset_instances(self):
+        self.opponent_instance.reset()
+        self.game_instance.reset()
+
+    # 이하 수신
+    # 데이터 parse
+    def r_parse_data(self, raw_data):
         try:
             t = raw_data['t']
             d = raw_data['d']
@@ -84,27 +97,28 @@ class OnlineHandler:
             print(f'Cannot parse data:\n{raw_data=}')
 
         if self.status == 'in_game':
-            self.parse_in_game(t, d)
+            self.r_parse_in_game(t, d)
         elif self.status == 'waiting':
-            self.parse_waiting(t, d)
+            self.r_parse_waiting(t, d)
         elif self.status == 'approaching':
-            self.parse_approaching(t, d)
+            self.r_parse_approaching(t, d)
         elif self.status == 'hello':
-            self.parse_hello(t, d)
+            self.r_parse_hello(t, d)
 
-    def parse_in_game(self, t, d):
-        if t == 'gd':  # 게임 데이터일때
-            self.update_opponent_info(d)
-        elif t == 'lo':  # 패배
+    # in_game 상황일때
+    def r_parse_in_game(self, t, d):
+        if t == RCODES['game_data']:  # 게임 데이터일때
+            self.r_update_opponent_info(d)
+        elif t == RCODES['lose']:  # 패배
             pass  # 패배 화면
-        elif t == 'wi':  # 승리
+        elif t == RCODES['win']:  # 승리
             pass  # 패배 화면
-        elif t == 'go':  # 상대 게임 오버
+        elif t == RCODES['game_over']:  # 상대 게임 오버
             pass  # 상대 화면에 게임 오버 띄우기
-        elif t == 'mc':  # 매치 끝남
-            self.game_instance.status = 'mp_waiting'  #
+        elif t == RCODES['match_complete']:  # 매치 끝남
+            self.r_on_match_complete()
 
-    def update_opponent_info(self, d: dict):
+    def r_update_opponent_info(self, d: dict):
         self.opponent_instance.score = d.get('score')
         self.opponent_instance.level = d.get('level')
         self.opponent_instance.goal = d.get('goal')
@@ -112,104 +126,87 @@ class OnlineHandler:
         self.opponent_instance.next_mino = Mino(d.get('next_mino_index'))
         self.opponent_instance.hold_mino = Mino(d.get('hold_mino_index'))
 
-    def parse_waiting(self, t, d):
-        if t == 'al':  # 어프로처 리스트
-            self.update_current_approacher(d)
+    def r_on_match_complete(self):
+        self.game_instance.status = 'mp_waiting'
 
-    def update_current_approacher(self, d):
+    def r_parse_waiting(self, t, d):
+        if t == RCODES['approacher_list']:  # 어프로처 리스트
+            self.r_update_current_approacher(d)
+
+    def r_update_current_approacher(self, d):
         self.current_approacher_list = d
 
-    def parse_approaching(self, t, d):
-        if t == 'ha':  # 대결 제안 수락됨
+    def r_parse_approaching(self, t, d):
+        if t == RCODES['host_accepted']:  # 대결 제안 수락됨
             self.reset_instances()
             self.game_instance.reset()
             self.game_instance.status('mp_game_ready')
             time.sleep(3)
             self.game_instance.status('in_game')
-        elif t == 'hr':  # 대결 제안 거절됨
+        elif t == RCODES['host_rejected']:  # 대결 제안 거절됨
             self.status = 'hello'  # 다시 대기 상태
 
-    def reset_instances(self):
-        self.opponent_instance.reset()
-        self.game_instance.reset()
+    def r_parse_hello(self, t, d):
+        if t == RCODES['waiter_list']:
+            self.r_update_current_waiter_list(d)
 
-    def parse_hello(self, t, d):
-        if t == 'wl':
-            self.update_current_waiter_list(d)
-
-    def update_current_waiter_list(self, d):
+    def r_update_current_waiter_list(self, d):
         self.current_waiter_list = d
 
-    def run_forever(self):
-        self.is_running = True
-        self.ws.run_forever()
-
-    def close(self):
-        self.is_running = False
-        self.ws.close()
+    # 이하 전송
 
     def send_json_req(self, req):
         self.ws.send(json.dumps(req))
 
-    def waiting_list_add(self):
+    def build_and_send_json_req(self, t: str, d=None):
         req = {
-            't': 'wa',
-            'd': None
+            't': t,
+            'd': d
         }
-        self.send_json_req(req)
+        self.send_json_req(req=req)
 
-    def waiting_list_remove(self):
-        req = {
-            't': 'wr',
-            'd': None
+    def s_waiting_list_add(self):
+        self.build_and_send_json_req(SCODES['waiting_list_add'])
+
+    def s_waiting_list_remove(self):
+        self.build_and_send_json_req(SCODES['waiting_list_remove'])
+
+    def s_approach(self, waiter_id: str):
+        self.build_and_send_json_req(SCODES['approach'], waiter_id)
+
+    def s_approach_cancel(self):
+        self.build_and_send_json_req(SCODES['approach_cancel'])
+
+    def s_host_accept(self, approacher_id: str):
+        self.build_and_send_json_req(SCODES['host_accept'], approacher_id)
+
+    def s_host_reject(self, approacher_id: str):
+        self.build_and_send_json_req(SCODES['host_reject'], approacher_id)
+
+    def s_game_data(self):
+        d = {
+            'id': self.user_id,
+            'score': self.game_instance.score,
+            'level': self.game_instance.level,
+            'goal': self.game_instance.goal,
+            'matrix': self.game_instance.board.temp_matrix,
+            'next_mino_index': self.game_instance.next_mino.shape_index,
+            'hold_mino_index': self.game_instance.hold_mino.shape_index,
         }
-        self.send_json_req(req)
+        self.build_and_send_json_req(SCODES['game_data'], d)
 
-    def approach(self, waiter_id: str):
-        req = {
-            't': 'a',
-            'd': waiter_id
-        }
-        self.send_json_req(req)
-
-    def approach_cancel(self):
-        pass
-
-    def host_accept(self, approacher_id: str):
-        req = {
-            't': 'aa',
-            'd': approacher_id
-        }
-        self.send_json_req(req)
-
-    def host_reject(self, approacher_id: str):
-        req = {
-            't': 'ar',
-            'd': approacher_id
-        }
-        self.send_json_req(req)
-
-    def send_current_gd(self):
-        current_dict = {
-            # 't': 'gd',
-            # 'd': {
-            #     'id': self.user_id,
-            #     'score': self.game_instance.score,
-            #     'level': self.game_instance.level,
-            #     'goal': self.game_instance.goal,
-            #     'matrix': self.game_instance.board.temp_matrix,
-            #     'next_mino_index': self.game_instance.next_mino.shape_index,
-            #     'hold_mino_index': self.game_instance.hold_mino.shape_index
-            # }
-        }
-        self.send_json_req(current_dict)
-
-    def send_current_gd_thread(self):
+    def s_game_data_loop(self):  # 스레드로 사용할것
         while True:
             if self.game_instance.status == 'in_game':
-                self.send_current_gd()
+                self.s_game_data()  # 비동기 처리가 필요할수도
                 time.sleep(0.1)  # 0.1초마다
+            if self.game_instance.status == 'game_over':
+                self.build_and_send_json_req(t=SCODES['game_over'], d=None)
+                break
 
-    def init_send_gd_thread(self):  # 게임 데이터 전송 스레드 초기화
-        self.send_gd_thread = threading.Thread(target=self.send_current_gd_thread, daemon=True)
+    def s_game_data_thread_init(self):  # 게임 데이터 전송 스레드 초기화
+        self.s_game_data_thread = threading.Thread(target=self.s_game_data_loop, daemon=True)
 
+    def s_game_data_thread_restart(self):  # 게임 데이터 전송 스레드 재시작
+        self.s_game_data_thread_init()
+        self.s_game_data_thread.start()
