@@ -28,7 +28,7 @@ class RedisManager:
         self.session = Client(host=self.host, port=self.port, db=0, decode_responses=True)  # 게임 세션 데이터 저장
         self.waiting = Client(host=self.host, port=self.port, db=1, decode_responses=True)  # 게임 대기열
         self.match_ids = Client(host=self.host, port=self.port, db=2, decode_responses=True)
-        self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=False)  # 메시지 브로커
+        self.msg_broker = Client(host=self.host, port=self.port, db=3, decode_responses=True)  # 메시지 브로커
         self.msg_pubsub = self.msg_broker.pubsub()  # 메시지 브로커 pub_sub
 
         self.initial_subscribe()  # 메시지 채널 구독
@@ -54,17 +54,17 @@ class RedisManager:
     async def approacher_get(self, waiter_id) -> (list):
         return self.waiting.jsonobjkeys(waiter_id, Path.rootPath())
 
-    async def approacher_set(self, approacher_id: str, waiter_id: str):
-        if self.waiting.jsonget(waiter_id) is None:
-            self.waiting.jsonset(name=waiter_id, path=Path.rootPath(), obj={})  # redis.exceptions.ResponseError 방지
-        self.waiting.jsonset(name=waiter_id, path=f'.{approacher_id}', obj='')
-
-        self.msg_broker.publish(waiter_id, 'au')  # waiter 에게 approacher 가 바뀜을 알림. todo 알림 user instance로 분리, 스키마 확인
+    async def approacher_set(self, approacher_id: str, waiter_id: str) -> bool:
+        try:
+            self.waiting.jsonset(name=waiter_id, path=f'.{approacher_id}', obj='')  # redis.exceptions.ResponseError 방지
+            return True
+        except redis.exceptions.ResponseError:
+            return False
 
     async def approacher_del(self, approacher_id: str, waiter_id: str):
         self.waiting.jsondel(name=waiter_id, path=f'.{approacher_id}')
 
-    async def approachers_clear_and_notice(self, waiter_id):
+    async def waiting_list_remove_and_notice(self, waiter_id):
         try:
             approachers: list = self.waiting.jsonobjkeys(name=waiter_id)
             for approacher in approachers:
@@ -87,14 +87,26 @@ class RedisManager:
         data = {
             player1: {},
             player2: {},
+            'game_over': []
         }
         self.session.jsonset(match_id, Path.rootPath(), data)
+
+    async def get_opponent(self, match_id: str, player_id: str):
+        session_keys: list = self.session.jsonobjkeys(match_id, Path.rootPath())
+        session_keys.remove(player_id)
+        session_keys.remove('game_over')
+        opponent = session_keys[0]
+        return opponent
+
+    async def game_over_user(self, player_id: str):
+        match_id = await self.player_match_id_get(player_id)
+        self.session.jsonarrappend(match_id, '.game_over', player_id)
 
     async def game_session_data_set(self, match_id, player_id, data):  # 게임 데이터 클라이언트에게 받아서 보냄
         try:
             self.session.jsonset(name=match_id, path=f'.{player_id}', obj=data)
         except redis.exceptions.ResponseError:
-            print(f'game session data set failed. \n{player_id=}\n{match_id=}\n{data=}')  # 테스트용 예외처리, 실제 서비스에선 수정 필요.
+            print(f'game session data set failed. \n{player_id=}\n{match_id=}\n{data=}')
 
     async def game_data_opponent_get(self, match_id, player_id) -> dict:  # 상대방 게임 정보만 return
         raw = self.session.jsonget(match_id)
@@ -103,3 +115,13 @@ class RedisManager:
 
     async def game_session_clear(self, match_id: str):
         self.session.delete(str(match_id))
+
+    async def user_connection_closed(self, player_id):
+        p_match_id = self.player_match_id_get(player_id)
+        if await p_match_id is not None:
+            gd = await self.game_data_opponent_get(p_match_id, player_id)
+            op_id = gd.get('id')
+            self.msg_broker.publish(channel=op_id, message='go')  # 게임중인 상대에게 게임 오버 신호 보내기 todo 상수 참조
+            await self.player_match_id_clear(player_id)
+        await self.waiting_list_remove_and_notice(player_id)
+        # todo approach 한 대상의 approacher 리스트에서 제거
