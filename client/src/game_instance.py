@@ -174,10 +174,12 @@ class GameInstance:
     def ev_move_left(self):
         if not self.is_left_collide():
             self.move(self.move_left)
+            post_event("MOVE")
 
     def ev_move_right(self):
         if not self.is_right_collide():
             self.move(self.move_right)
+            post_event("MOVE")
 
     # 우측 회전, mod_list 는 현재 미노의 x, y 값을 조금씩 조정했을 때 회전이 가능한지를 판별하기 위함.
     def ev_rotate_right(self):
@@ -238,6 +240,7 @@ class GameInstance:
         while not self.is_bottom_collide(self.x, self.y):
             self.move(self.move_down)
         self.freeze_current_mino()
+        post_event("HARD_DROP")
 
     # 현재 미노를 hold
     def hold_current_mino(self):
@@ -278,6 +281,14 @@ class GameInstance:
             if self.is_y_line_full(y_index=y):  # line 이 full 이면 line count 값 1 더하고 라인 지움
                 line_count += 1
                 self.erase_line(y_index=y)
+                if line_count == 1:
+                    post_event("LINE_ERASED")
+                elif line_count == 2:
+                    post_event("LINE_ERASED_2")
+                elif line_count == 3:
+                    post_event("LINE_ERASED_3")
+                elif line_count == 4:
+                    post_event("LINE_ERASED_4")
 
         score_list = (50, 150, 350, 1000)  # 분리 필요
 
