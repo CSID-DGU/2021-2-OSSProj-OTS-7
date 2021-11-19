@@ -8,7 +8,7 @@ from client.src.game_instance import GameInstance
 from client.src.display_drawer import DisplayDrawer
 from client.src.event_handler import EventHandler
 from client.src.online_handler import OnlineHandler
-from .login_window import login_window
+from .online_window import login_window
 from ..consts.asset_paths import Path
 import webbrowser
 import sys
@@ -103,7 +103,7 @@ class Launcher(QWidget):
         ots, oh = self.init_objs(is_mp=False)
         ots.main_loop()
 
-    def run_online(self):
-        ots, oh = self.init_objs(is_mp=True)
-        oh.ws_thread.start()
-        ots.main_loop()
+    # def run_online(self):
+    #     ots, oh = self.init_objs(is_mp=True)
+    #     oh.ws_thread.start()
+    #     ots.main_loop()
