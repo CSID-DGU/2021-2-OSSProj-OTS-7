@@ -16,7 +16,7 @@ router.post('/login', async(req, res, next) => {
                 res.json({msg: "failed"}); //회원정보 없음
                 return;
             }else{
-            res.json({msg: "success"}); // 회원정보 존재
+            res.json({msg: user}); // 회원정보 존재
             return;
             }
             let accessToken = jwt.sign({email, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
@@ -59,7 +59,7 @@ function findUser(email, password) {
             }
         })
         .then(result => {
-            resolve(result);
+            resolve(result['name']);
         })
         .catch((err) => {
             reject(err);
