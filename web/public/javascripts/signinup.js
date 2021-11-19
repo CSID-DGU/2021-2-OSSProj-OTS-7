@@ -54,11 +54,11 @@ window.onload = () => {
             })
             .then(res => res.json())
             .then(json => {
-                if(json.msg==="success"){
+                if(json.msg==="failed"){
+                    alert("failed Login");
+                }else{
                     alert("success Login");
                     window.location.href ='/histories';
-                }else{
-                    alert("failed Login");
                 }
             }).catch(err=>{
                 console.log(err);
