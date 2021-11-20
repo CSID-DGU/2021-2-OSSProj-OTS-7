@@ -2,13 +2,14 @@ import threading
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, \
     QLabel
-from ..consts.asset_paths import Path as Path
-from ..main import OTS
-from ..game_instance import GameInstance
-from ..display_drawer import DisplayDrawer
-from ..event_handler import EventHandler
-from ..online_handler import OnlineHandler
-from .login_window import login_window
+
+from client.src.consts.asset_paths import Path as Path
+from client.src.main import OTS
+from client.src.game_instance import GameInstance
+from client.src.display_drawer import DisplayDrawer
+from client.src.event_handler import EventHandler
+from client.src.online_handler import OnlineHandler
+from .online_window import login_window
 from ..consts.asset_paths import Path
 import webbrowser
 import sys
@@ -104,7 +105,7 @@ class Launcher(QWidget):
         ots, oh = self.init_objs(is_mp=False)
         ots.main_loop()
 
-    def run_online(self):
-        ots, oh = self.init_objs(is_mp=True)
-        oh.ws_thread.start()
-        ots.main_loop()
+    # def run_online(self):
+    #     ots, oh = self.init_objs(is_mp=True)
+    #     oh.ws_thread.start()
+    #     ots.main_loop()
