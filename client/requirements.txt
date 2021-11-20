@@ -2,4 +2,4 @@ pygame==2.1.0
 PySide2==5.15.2
 shiboken2==5.15.2
 websocket-client==1.2.1
-requests==2.26.0
+requests=2.26.0
