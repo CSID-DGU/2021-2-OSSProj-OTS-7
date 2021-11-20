@@ -1,3 +1,4 @@
+import sys
 import pygame
 import os
 import signal
@@ -48,11 +49,8 @@ class OTS:
         self.before_quit()
         pygame.display.quit()
         pygame.quit()
-        try:  # 런처 동시 종료를 위함.
-            os.kill(os.getpid(), signal.SIGTERM)  # POSIX
-        except AttributeError:
-            os._exit()  # 윈도우
-
+        os.kill(os.getpid(), signal.SIGTERM)  # 런처 동시 종료를 위함. POSIX 신호인데 윈도우에서 일단 동작을 함.
+        sys.exit()
 
     # 이벤트 핸들러에 이벤트 넘겨주기
     def handle_event(self, event):

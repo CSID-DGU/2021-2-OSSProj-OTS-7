@@ -2,6 +2,7 @@ import threading
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, \
     QLabel
+
 from client.src.consts.asset_paths import Path as Path
 from client.src.main import OTS
 from client.src.game_instance import GameInstance
@@ -82,6 +83,7 @@ class Launcher(QWidget):
 
     def run_launcher(self):
         self.app.exec_()
+
     # 이하 ots 세팅, 실행 코드
     def init_objs(self, is_mp: bool):
         if not is_mp:

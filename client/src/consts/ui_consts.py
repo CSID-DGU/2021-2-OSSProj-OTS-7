@@ -1,7 +1,3 @@
-import pygame
-from pygame.mixer import Sound
-
-
 class UI_CONSTS:
     init_block_size = 17  # Height, width of single block
     init_board_width = 10  # Board width

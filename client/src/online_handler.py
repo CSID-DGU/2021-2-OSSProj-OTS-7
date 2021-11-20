@@ -26,6 +26,7 @@ SCODES = {
     'game_over': 'go',
     'waiting_list_add': 'wa',
     'waiting_list_remove': 'wr',
+    'waiting_list_get': 'wg',
     'approach': 'a',
     'approach_cancel': 'ac',
     'host_accept': 'ha',
