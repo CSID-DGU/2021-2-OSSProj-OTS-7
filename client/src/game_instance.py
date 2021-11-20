@@ -168,8 +168,7 @@ class GameInstance:
     def ev_move_down_manual(self):
         if not self.is_bottom_collide(self.x, self.y):
             self.move(self.move_down)
-        else:
-            self.freeze_current_mino()
+            post_event("MOVE")
 
     def ev_move_left(self):
         if not self.is_left_collide():

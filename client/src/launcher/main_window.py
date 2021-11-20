@@ -1,18 +1,17 @@
+import sys
 import threading
-from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, \
-    QLabel
+import webbrowser
 
-from client.src.consts.asset_paths import Path as Path
-from client.src.main import OTS
-from client.src.game_instance import GameInstance
+from PySide2.QtGui import QIcon, QPixmap
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
+
 from client.src.display_drawer import DisplayDrawer
 from client.src.event_handler import EventHandler
+from client.src.game_instance import GameInstance
+from client.src.main import OTS
 from client.src.online_handler import OnlineHandler
-from .online_window import login_window
+from .login_window import login_window
 from ..consts.asset_paths import Path
-import webbrowser
-import sys
 
 
 class Launcher(QWidget):

@@ -27,7 +27,7 @@ class EventFlags:
 class EventFuncMap:
     def __init__(self, game_instance: GameInstance):
         self.dict = {
-            'down': game_instance.ev_move_down,
+            'down': game_instance.ev_move_down_manual,
             'up': game_instance.ev_rotate_right,
             'right': game_instance.ev_move_right,
             'left': game_instance.ev_move_left,
