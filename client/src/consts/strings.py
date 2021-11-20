@@ -6,3 +6,8 @@ class STRINGS:
     game = "GAME"
     over = "OVER"
 
+    mp_hello = "Welcome to the Online Tetris"
+    mp_waiting = "Find matching..."
+    mp_approaching = "match connected!"
+
+
