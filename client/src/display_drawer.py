@@ -34,12 +34,43 @@ class DisplayDrawer:
             self.draw_start_screen()
         elif self.game_instance.status == 'mp_game_ready':
             self.draw_ready()
+        elif self.game_instance.status == 'mp_hello':
+            self.draw_hello()
+        elif self.game_instance.status == 'mp_waiting':
+            self.draw_waiting()
+        elif self.game_instance.status == 'mp_approaching':
+            self.draw_approaching()
+        elif self.game_instance.status == 'mp_game_over':
+            self.draw_mp_game_over()
+
         pygame.display.update()
 
     def draw_ready(self):
         self.screen.fill(UI_CONSTS.grey_3)
         message = FONTS.h4.render(STRINGS.start_soon, True, UI_CONSTS.white)
         self.screen.blit(message, (0, 120))
+    def draw_hello(self):
+        self.screen.fill(UI_CONSTS.grey_3)
+        message = FONTS.h2_b.render(STRINGS.mp_hello, True, UI_CONSTS.white)
+        self.screen.blit(message, (0, 120))
+    def draw_waiting(self):
+        self.screen.fill(UI_CONSTS.grey_3)
+        message = FONTS.h2_b.render(STRINGS.mp_waiting, True, UI_CONSTS.white)
+        self.screen.blit(message, (0, 120))
+    def draw_approaching(self):
+        self.screen.fill(UI_CONSTS.grey_3)
+        message = FONTS.h2_b.render(STRINGS.mp_approaching, True, UI_CONSTS.white)
+        self.screen.blit(message, (0, 120))
+
+    def draw_mp_game_over(self):
+        over_text_1 = FONTS.h2_b.render(STRINGS.game, True, UI_CONSTS.white)
+        over_text_2 = FONTS.h2_b.render(STRINGS.over, True, UI_CONSTS.white)
+
+        self.draw_in_game_screen()
+        self.screen.blit(over_text_1, (58, 75))    # player 1 화면
+        self.screen.blit(over_text_2, (62, 105))
+        self.screen.blit(over_text_1, (118, 75))   # player 2 화면
+        self.screen.blit(over_text_2, (122, 105))
 
     def draw_start_screen(self):  # TODO start screen 멀티플레이 선택, 웹 연결 등
 
