@@ -4,7 +4,8 @@ import threading
 import json
 from .game_instance import GameInstance
 from .components.mino import Mino
-
+from .launcher.online_lobby import OnlineLobby
+from .launcher.online_data_temp import OnlineData
 # receiving codes
 RCODES = {
     'game_data': 'gd',
@@ -43,13 +44,14 @@ def on_close(ws, close_status_code, close_msg):
 
 
 class OnlineHandler:
-    def __init__(self, user_id, game_instance: GameInstance, opponent_instance: GameInstance):
+    def __init__(self, user_id, game_instance: GameInstance, opponent_instance: GameInstance, online_queue, online_data: OnlineData):
         # websocket.enableTrace(True)
         self.status = 'hello'
         self.user_id = user_id
         self.game_instance = game_instance
         self.opponent_instance = opponent_instance
         self.opponent = None
+        self.online_queue = online_queue
         self.current_waiter_list = []
         self.current_approacher_list = []
         self.ws = websocket.WebSocketApp(
@@ -59,8 +61,17 @@ class OnlineHandler:
             on_error=on_error,
             on_close=on_close,
         )
+        self.online_data = online_data
         self.ws_thread = threading.Thread(target=self.ws_connect, daemon=True)  # 웹 소켓 연결 스레드
         self.s_game_data_thread = threading.Thread(target=self.s_game_data_loop, daemon=True)  # 게임 데이터 전송 스레드
+        self.asdf_thread = threading.Thread(target=self.asdf, daemon=True)
+
+    def asdf(self):
+        for msg in self.online_data.message_queue_gen():
+            self.do_something(msg)
+
+    def do_something(self, msg):
+        print(msg)
 
     def on_open(self, ws):
         ws.send(self.user_id)
@@ -128,7 +139,7 @@ class OnlineHandler:
         self.opponent_instance.hold_mino = Mino(d.get('hold_mino_index'))
 
     def r_on_match_complete(self):
-        self.game_instance.status = 'mp_waiting'
+        self.game_instance.status = 'mp_hello'  # todo 게임 인스턴스 상태 상수화
 
     def r_parse_waiting(self, t, d):
         if t == RCODES['approacher_list']:  # 어프로처 리스트
@@ -136,6 +147,8 @@ class OnlineHandler:
 
     def r_update_current_approacher(self, d):
         self.current_approacher_list = d
+        self.online_queue.invite_list = d
+        # todo online_queue view refresh
 
     def r_parse_approaching(self, t, d):
         if t == RCODES['host_accepted']:  # 대결 제안 수락됨
@@ -153,6 +166,8 @@ class OnlineHandler:
 
     def r_update_current_waiter_list(self, d):
         self.current_waiter_list = d
+        self.online_queue.lobby_list = d
+        # todo waiter_list view refresh
 
     # 이하 전송
 
@@ -211,3 +226,6 @@ class OnlineHandler:
     def s_game_data_thread_restart(self):  # 게임 데이터 전송 스레드 재시작
         self.s_game_data_thread_init()
         self.s_game_data_thread.start()
+
+    # def game_start(self):
+    #     self.
