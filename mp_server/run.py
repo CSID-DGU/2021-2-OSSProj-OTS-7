@@ -1,4 +1,4 @@
-from src.main import app
+from mp_server.src.main import app
 from uvicorn import run
 
 if __name__ == '__main__':

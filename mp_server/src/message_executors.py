@@ -1,5 +1,5 @@
-from .redis_manager import RedisManager
-from .user_instance import UserInstance
+from mp_server.src.redis_manager import RedisManager
+from mp_server.src.user_instance import UserInstance
 
 SERVER_CODES = {
     'game_data': 'gd',
