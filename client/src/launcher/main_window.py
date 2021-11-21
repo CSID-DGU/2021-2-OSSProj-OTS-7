@@ -5,12 +5,12 @@ import webbrowser
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
 
-from client.src.display_drawer import DisplayDrawer
-from client.src.event_handler import EventHandler
-from client.src.game_instance import GameInstance
-from client.src.main import OTS
-from client.src.online_handler import OnlineHandler
-from .login_window import login_window
+from ..display_drawer import DisplayDrawer
+from ..event_handler import EventHandler
+from ..game_instance import GameInstance
+from ..main import OTS
+from ..online_handler import OnlineHandler
+from .login_window import LoginWindow
 from ..consts.asset_paths import Path
 
 
@@ -21,7 +21,7 @@ class Launcher(QWidget):
         self.game_mode = None
         self.player_id = 'offline'
         self.initialize()
-        self.lw = login_window()
+        self.lw = LoginWindow()
 
     def initialize(self):
 
@@ -56,6 +56,7 @@ class Launcher(QWidget):
         self.single_btn.setDisabled(1)
         self.dual_btn.setDisabled(1)
         self.online_btn.setDisabled(1)
+        self.setVisible(False)
 
     def single_btn_clicked(self):
         self.set_launch_btns_disabled()
@@ -68,11 +69,8 @@ class Launcher(QWidget):
         sys.exit(self.app.exec_())
 
     def online_btn_clicked(self):
-
+        self.set_launch_btns_disabled()
         self.lw.show()
-        # self.set_launch_btns_disabled()
-        # t = threading.Thread(target=self.run_online)
-        # t.start()
 
     def signup_btn_clicked(self):
         webbrowser.open(Path.signup_url)
@@ -100,11 +98,7 @@ class Launcher(QWidget):
             oh = None
         return ots, oh
 
-    def run_game(self):
-        ots, oh = self.init_objs(is_mp=False)
+    def run_online(self):
+        ots, oh = self.init_objs(is_mp=True)
+        oh.ws_thread.start()
         ots.main_loop()
-
-    # def run_online(self):
-    #     ots, oh = self.init_objs(is_mp=True)
-    #     oh.ws_thread.start()
-    #     ots.main_loop()
