@@ -12,6 +12,7 @@ from ..main import OTS
 from ..online_handler import OnlineHandler
 from .login_window import LoginWindow
 from ..consts.asset_paths import Path
+from ..consts.urls import URLS
 
 
 class Launcher(QWidget):
@@ -72,11 +73,13 @@ class Launcher(QWidget):
         self.set_launch_btns_disabled()
         self.lw.show()
 
-    def signup_btn_clicked(self):
-        webbrowser.open(Path.signup_url)
+    @staticmethod
+    def signup_btn_clicked():
+        webbrowser.open(URLS.signup_url)
 
-    def help_btn_clicked(self):
-        webbrowser.open(Path.help_image_url)
+    @staticmethod
+    def help_btn_clicked():
+        webbrowser.open(URLS.help_image_url)
 
     def run_launcher(self):
         self.app.exec_()
@@ -98,7 +101,12 @@ class Launcher(QWidget):
             oh = None
         return ots, oh
 
-    def run_online(self):
-        ots, oh = self.init_objs(is_mp=True)
-        oh.ws_thread.start()
+    # def run_online(self):
+    #     ots, oh = self.init_objs(is_mp=True)
+    #     oh.ws_thread.start()
+    #     ots.main_loop()
+
+    def run_game(self):
+        ots, oh = self.init_objs(is_mp=False)
         ots.main_loop()
+
