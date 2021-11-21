@@ -53,12 +53,16 @@ async def server_message_exec(msg):
     msg_type = msg.get('type')
     channel: bytes = msg.get('channel')  # user_id 가 채널
 
-    try:
-        user: UserInstance = players_dict[channel.decode()]  # user_id 에 매핑된 플레이어 커넥션 객체
-        if msg_type == 'message':
-            await ume.user_msg_exec(user, msg.get('data'))
-    except KeyError:
-        print('player connection object does not exist')
+    if channel != 'waiting':
+        try:
+            user: UserInstance = players_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
+            if msg_type == 'message':
+                await sme.server_msg_exec(user, msg)
+        except KeyError:
+            print('player connection object does not exist')
+    elif channel == 'waiting':
+        for user in players_dict.values():
+            await sme.send_waiters(user)
 
 
 @app.websocket("/ws")
@@ -73,6 +77,7 @@ async def user_instance_create(websocket: WebSocket) -> UserInstance:
     rd_manager.msg_pubsub.subscribe(player_id)  # redis player_id 채널 구독
     user_instance = UserInstance(player_id=player_id, websocket=websocket)
     players_dict[player_id] = user_instance
+    rd_manager.msg_broker.publish('waiting', '')
     return user_instance
 
 
@@ -81,14 +86,21 @@ async def user_message_receive(websocket, user: UserInstance):
         while True:
             try:
                 msg: dict = await websocket.receive_json()  # 받은 json 형식 데이터, 딕셔너리로 자동 변환됨.
+                print(msg)
                 await ume.user_msg_exec(user, msg)  # 메시지 처리
             except json.decoder.JSONDecodeError:
                 print('not json type data')
 
     except WebSocketDisconnect:  # 연결 종료시
-        print(f'player {user.player_id} disconnected')
-        rd_manager.msg_pubsub.unsubscribe(user.player_id)
-        players_dict.pop(user.player_id)
+        await on_connection_lost(user)
         # 연결 끊겼을 때 필요한 조치
         # Todo 상대 클라이언트에 연결 끊김 알림
 
+
+async def on_connection_lost(user: UserInstance):
+    print(f'player {user.player_id} disconnected')
+    rd_manager.msg_pubsub.unsubscribe(user.player_id)
+    players_dict.pop(user.player_id)
+    await rd_manager.user_connection_closed(user.player_id)
+    if user.approached_to is not None:
+        await rd_manager.approacher_del(user.player_id, user.approached_to)

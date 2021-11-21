@@ -49,14 +49,17 @@ class DisplayDrawer:
         self.screen.fill(UI_CONSTS.grey_3)
         message = FONTS.h4.render(STRINGS.start_soon, True, UI_CONSTS.white)
         self.screen.blit(message, (0, 120))
+
     def draw_hello(self):
         self.screen.fill(UI_CONSTS.grey_3)
         message = FONTS.h2_b.render(STRINGS.mp_hello, True, UI_CONSTS.white)
         self.screen.blit(message, (0, 120))
+
     def draw_waiting(self):
         self.screen.fill(UI_CONSTS.grey_3)
         message = FONTS.h2_b.render(STRINGS.mp_waiting, True, UI_CONSTS.white)
         self.screen.blit(message, (0, 120))
+
     def draw_approaching(self):
         self.screen.fill(UI_CONSTS.grey_3)
         message = FONTS.h2_b.render(STRINGS.mp_approaching, True, UI_CONSTS.white)

@@ -6,7 +6,7 @@ from rejson import Client, Path
 def get_waiting_obj(waiting_player_id: str):  # redis 에 등록할 waiting json
     to_return = {
         'waiter': waiting_player_id,
-        'approachers': [],
+        'approachers': {},
     }
     return to_return
 
@@ -51,27 +51,28 @@ class RedisManager:
         except redis.exceptions.DataError:
             print(f'{player_id} is not ins waiting list')
 
-    async def approacher_get(self, waiter_id) -> (list):
-        return self.waiting.jsonobjkeys(waiter_id, Path.rootPath())
+    async def approacher_get(self, waiter_id) -> list:
+        return self.waiting.jsonobjkeys(waiter_id, '.approachers')
 
     async def approacher_set(self, approacher_id: str, waiter_id: str) -> bool:
         try:
-            self.waiting.jsonset(name=waiter_id, path=f'.{approacher_id}', obj='')  # redis.exceptions.ResponseError 방지
+            self.waiting.jsonset(name=waiter_id, path=f'.approachers.{approacher_id}', obj='')  # redis.exceptions.ResponseError 방지
             return True
         except redis.exceptions.ResponseError:
             return False
 
     async def approacher_del(self, approacher_id: str, waiter_id: str):
-        self.waiting.jsondel(name=waiter_id, path=f'.{approacher_id}')
+        self.waiting.jsondel(name=waiter_id, path=f'.approachers.{approacher_id}')
 
     async def waiting_list_remove_and_notice(self, waiter_id):
         try:
-            approachers: list = self.waiting.jsonobjkeys(name=waiter_id)
+            approachers: list = self.waiting.jsonobjkeys(name=waiter_id, path='.approachers')
             for approacher in approachers:
                 self.msg_broker.publish(channel=approacher, message='hr')
-            self.waiting.jsondel(name=waiter_id)
         except redis.exceptions.ResponseError:
             print('redis response error! approacher_clear_and_notice()')
+        finally:
+            self.waiting.jsondel(name=waiter_id)
 
     async def match_id_set(self, approacher_id: str, host_id: str):  # 매치 id 는 waiter_id, db 업데이트 등 게임 결과 상태 처리는 waiter 쪽 프로세스가 전담.
         self.match_ids.set(approacher_id, host_id)
@@ -98,6 +99,9 @@ class RedisManager:
         opponent = session_keys[0]
         return opponent
 
+    async def get_game_over(self, match_id):
+        return self.session.jsonget(match_id, '.game_over')
+
     async def game_over_user(self, player_id: str):
         match_id = await self.player_match_id_get(player_id)
         self.session.jsonarrappend(match_id, '.game_over', player_id)
@@ -111,6 +115,7 @@ class RedisManager:
     async def game_data_opponent_get(self, match_id, player_id) -> dict:  # 상대방 게임 정보만 return
         raw = self.session.jsonget(match_id)
         raw.pop(player_id)  # 자신 데이터만 뺌
+        print(raw)
         return raw
 
     async def game_session_clear(self, match_id: str):
@@ -118,10 +123,11 @@ class RedisManager:
 
     async def user_connection_closed(self, player_id):
         p_match_id = self.player_match_id_get(player_id)
-        if await p_match_id is not None:
+        if await p_match_id is not None:  # 현재 게임중인지 확인
             gd = await self.game_data_opponent_get(p_match_id, player_id)
-            op_id = gd.get('id')
+            op_id = gd.get('id')  # 상대 아이디 확인
             self.msg_broker.publish(channel=op_id, message='go')  # 게임중인 상대에게 게임 오버 신호 보내기 todo 상수 참조
-            await self.player_match_id_clear(player_id)
-        await self.waiting_list_remove_and_notice(player_id)
+            await self.player_match_id_clear(player_id)  # 플레이어에게 할당된 매치 아이디 제거
+        await self.waiting_list_remove_and_notice(player_id)  # 대기중이었을 경우 approacher 들에게 알림.
+
         # todo approach 한 대상의 approacher 리스트에서 제거

@@ -56,6 +56,7 @@ class Launcher(QWidget):
         self.single_btn.setDisabled(1)
         self.dual_btn.setDisabled(1)
         self.online_btn.setDisabled(1)
+        self.setVisible(False)
 
     def single_btn_clicked(self):
         self.set_launch_btns_disabled()
@@ -68,11 +69,8 @@ class Launcher(QWidget):
         sys.exit(self.app.exec_())
 
     def online_btn_clicked(self):
-
+        self.set_launch_btns_disabled()
         self.lw.show()
-        # self.set_launch_btns_disabled()
-        # t = threading.Thread(target=self.run_online)
-        # t.start()
 
     def signup_btn_clicked(self):
         webbrowser.open(Path.signup_url)
