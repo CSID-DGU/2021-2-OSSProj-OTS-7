@@ -44,14 +44,19 @@ def on_close(ws, close_status_code, close_msg):
 
 
 class OnlineHandler:
-    def __init__(self, user_id, game_instance: GameInstance, opponent_instance: GameInstance, online_queue, online_data: OnlineData):
-        # websocket.enableTrace(True)
+    def __init__(self, user_id: str,
+                 game_instance: GameInstance,
+                 opponent_instance: GameInstance,
+                 online_lobby: OnlineLobby,
+                 online_data: OnlineData):
+
+        websocket.enableTrace(True)
         self.status = 'hello'
         self.user_id = user_id
         self.game_instance = game_instance
         self.opponent_instance = opponent_instance
         self.opponent = None
-        self.online_queue = online_queue
+        self.online_queue = online_lobby
         self.current_waiter_list = []
         self.current_approacher_list = []
         self.ws = websocket.WebSocketApp(
@@ -64,14 +69,28 @@ class OnlineHandler:
         self.online_data = online_data
         self.ws_thread = threading.Thread(target=self.ws_connect, daemon=True)  # 웹 소켓 연결 스레드
         self.s_game_data_thread = threading.Thread(target=self.s_game_data_loop, daemon=True)  # 게임 데이터 전송 스레드
-        self.asdf_thread = threading.Thread(target=self.asdf, daemon=True)
+        self.gui_emit_thread = threading.Thread(target=self.on_emit, daemon=True)  # online_lobby gui 입력 받아옴.
 
-    def asdf(self):
-        for msg in self.online_data.message_queue_gen():
-            self.do_something(msg)
+    def on_emit(self):
+        for msg in self.online_data.thread_queue_gen():
+            self.parse_emit(msg)
 
-    def do_something(self, msg):
-        print(msg)
+    def parse_emit(self, msg: dict):
+        todo = msg['t']
+        data = msg['d']
+
+        if todo == SCODES['host_accept']:
+            self.s_host_accept(data)
+        elif todo == SCODES['host_reject']:
+            self.s_host_reject(data)
+        elif todo == SCODES['approach']:
+            self.s_approach(data)
+        elif todo == SCODES['approach_cancel']:
+            self.s_approach_cancel()
+        elif todo == SCODES['waiting_list_add']:
+            self.s_waiting_list_add()
+        elif todo == SCODES['waiting_list_remove']:
+            self.s_waiting_list_remove()
 
     def on_open(self, ws):
         ws.send(self.user_id)
@@ -227,5 +246,3 @@ class OnlineHandler:
         self.s_game_data_thread_init()
         self.s_game_data_thread.start()
 
-    # def game_start(self):
-    #     self.
