@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from mp_server.src.redis_manager import RedisManager
-from mp_server.src.user_instance import UserInstance
-from mp_server.src.message_executors import UserMsgExecutor, ServerMsgExecutor
+from .redis_manager import RedisManager
+from .user_instance import UserInstance
+from .message_executors import UserMsgExecutor, ServerMsgExecutor
 from collections import deque
 import threading
 import asyncio
