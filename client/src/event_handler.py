@@ -202,3 +202,27 @@ class EventHandler:
             pygame.mixer.Sound.play(SOUNDS.sfx_move)
         elif event == "HARD_DROP":
             pygame.mixer.Sound.play(SOUNDS.sfx_drop)
+
+        elif event == "BGM1":
+            pygame.mixer.Sound.play(SOUNDS.bgm_1)
+        elif event == "BGM2":
+            pygame.mixer.Sound.play(SOUNDS.bgm_2)
+        elif event == "BGM3":
+            pygame.mixer.Sound.play(SOUNDS.bgm_3)
+        elif event == "BGM4":
+            pygame.mixer.Sound.play(SOUNDS.bgm_4)
+
+        elif event == "BGM1_OFF":
+            pygame.mixer.Sound.stop(SOUNDS.bgm_1)
+        elif event == "BGM2_OFF":
+            pygame.mixer.Sound.stop(SOUNDS.bgm_2)
+        elif event == "BGM3_OFF":
+            pygame.mixer.Sound.stop(SOUNDS.bgm_3)
+        elif event == "BGM4_OfF":
+            pygame.mixer.Sound.stop(SOUNDS.bgm_4)
+
+        elif event == "BGM_ALL_OFF":
+            pygame.mixer.Sound.stop(SOUNDS.bgm_1)
+            pygame.mixer.Sound.stop(SOUNDS.bgm_2)
+            pygame.mixer.Sound.stop(SOUNDS.bgm_3)
+            pygame.mixer.Sound.stop(SOUNDS.bgm_4)
