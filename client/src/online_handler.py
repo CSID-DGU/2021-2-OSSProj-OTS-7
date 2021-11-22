@@ -174,12 +174,21 @@ class OnlineHandler:
 
     def r_update_opponent_info(self, d: dict):
         if d:
-            self.opponent_instance.score = d.get('score')
-            self.opponent_instance.level = d.get('level')
-            self.opponent_instance.goal = d.get('goal')
-            self.opponent_instance.board.temp_matrix = d.get('matrix')
-        # self.opponent_instance.next_mino = Mino(d.get('next_mino_index'))
-        # self.opponent_instance.hold_mino = Mino(d.get('hold_mino_index'))
+            score = d.get('score')
+            level = d.get('level')
+            goal = d.get('goal')
+            matrix = d.get('matrix')
+            next_mino_index = d.get('next_mino_index')
+            hold_mino_index = d.get('hold_mino_index')
+
+            self.opponent_instance.score = score
+            self.opponent_instance.level = level
+            self.opponent_instance.goal = goal
+            self.opponent_instance.board.temp_matrix = matrix
+
+            self.opponent_instance.next_mino = Mino(next_mino_index)
+            if hold_mino_index != -1:
+                self.opponent_instance.hold_mino = Mino(hold_mino_index)
 
     def r_on_lose(self):
         pass
@@ -269,10 +278,16 @@ class OnlineHandler:
             'level': self.game_instance.level,
             'goal': self.game_instance.goal,
             'matrix': self.game_instance.board.temp_matrix,
-            # 'next_mino_index': self.game_instance.next_mino.shape_index,
-            # 'hold_mino_index': self.game_instance.hold_mino.shape_index,
+            'next_mino_index': self.game_instance.next_mino.shape_index,
+            'hold_mino_index': self.get_hold_mino_index(),
         }
         self.build_and_send_json_req(SCODES['game_data'], d)
+
+    def get_hold_mino_index(self) -> int:
+        if self.game_instance.hold_mino is not None:
+            return self.game_instance.hold_mino.shape_index
+        else:
+            return -1
 
     def s_game_data_loop(self):  # 스레드로 사용할것
         while True:
