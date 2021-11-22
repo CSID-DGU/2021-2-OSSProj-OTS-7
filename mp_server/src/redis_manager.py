@@ -1,4 +1,4 @@
-from mp_server.src import config
+from . import config
 import redis.exceptions
 from rejson import Client, Path
 

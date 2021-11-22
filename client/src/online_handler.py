@@ -61,7 +61,7 @@ class OnlineHandler:
         self.current_waiter_list = []
         self.current_approacher_list = []
         self.ws = websocket.WebSocketApp(
-            f"ws://127.0.0.1:8000/ws",
+            f"wss://ots.prvt.dev/ws",
             on_open=lambda ws: self.on_open(ws),
             on_message=lambda ws, msg: self.on_message(ws, msg),
             on_error=on_error,
