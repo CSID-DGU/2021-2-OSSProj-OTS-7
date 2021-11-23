@@ -3,6 +3,7 @@ from .redis_manager import RedisManager
 from .user_instance import UserInstance
 from .message_executors import UserMsgExecutor, ServerMsgExecutor
 from queue import Queue
+from concurrent.futures import ThreadPoolExecutor
 import threading
 import asyncio
 import json
@@ -23,8 +24,9 @@ players_dict = {}  # players connected to this worker process
 async def on_startup():
     ml = threading.Thread(target=server_message_listen, daemon=True)
     ml.start()  # 메시지 리스너 스레드 시작
-    mp = threading.Thread(target=server_message_process, daemon=True)
-    mp.start()  # 메시지 파서 스레드 시작
+    loop = asyncio.get_running_loop()  # server_message_process 에 넘겨줄 async event loop
+    mp = threading.Thread(target=server_message_process, args=(loop,), daemon=True)  # 메시지 프로세스 스레드
+    mp.start()  # 메시지 프로세스 스레드 시작
 
 
 # redis 에서 받은 메시지를 큐에 넣음. 스레드로 사용할것
@@ -34,24 +36,18 @@ def server_message_listen():
             message_queue.put(msg)
 
 
-# 메시지 큐 제너레이터
-def server_message_queue_gen():
-    while True:
-        yield message_queue.get()
-
-
 # 큐에서 메시지를 꺼내서 작업 진행. 스레드로 사용할것
-def server_message_process():
-    loop = asyncio.new_event_loop()
-    for msg in server_message_queue_gen():
-        loop.run_until_complete(server_message_exec(msg))
+def server_message_process(loop):
+    asyncio.set_event_loop(loop)  # 인자로 넘겨받은 이벤트 루프를 set
+    while True:
+        msg = message_queue.get()  # 블로킹 큐
+        loop.create_task(server_message_exec(msg))  # 비동기 이벤트 루프에 task 추가
 
 
-# 메시지 브로커에게 받은 메시지 명령 실행
+# 메시지 브로커에게 받은 메시지 명령 실행, UserInstance 를 특정해서 넘겨줌.
 async def server_message_exec(msg):
     msg_type = msg.get('type')
-    channel: bytes = msg.get('channel')  # user_id 가 채널
-
+    channel: str = msg.get('channel')  # user_id 가 채널
     if channel != 'waiting':
         try:
             user: UserInstance = players_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
@@ -85,7 +81,6 @@ async def user_message_receive(websocket, user: UserInstance):
         while True:
             try:
                 msg: dict = await websocket.receive_json()  # 받은 json 형식 데이터, 딕셔너리로 자동 변환됨.
-                print(msg)
                 await ume.user_msg_exec(user, msg)  # 메시지 처리
             except json.decoder.JSONDecodeError:
                 print('not json type data')
