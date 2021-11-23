@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .redis_manager import RedisManager
 from .user_instance import UserInstance
 from .message_executors import UserMsgExecutor, ServerMsgExecutor
-from collections import deque
+from queue import Queue
 import threading
 import asyncio
 import json
@@ -14,7 +14,7 @@ rd_manager = RedisManager()  # redis 관련 메소드
 ume = UserMsgExecutor(rd_manager)  # 유저 메시지 파싱, 실행
 sme = ServerMsgExecutor(rd_manager)  # 서버 메시지 파싱, 실행
 
-message_queue = deque([])  # deque 의 popleft 와 append 는 thread safe
+message_queue = Queue()
 players_dict = {}  # players connected to this worker process
 
 
@@ -31,14 +31,13 @@ async def on_startup():
 def server_message_listen():
     for msg in rd_manager.msg_pubsub.listen():
         if msg.get('type') == 'message':
-            message_queue.append(msg)
+            message_queue.put(msg)
 
 
 # 메시지 큐 제너레이터
 def server_message_queue_gen():
     while True:
-        if message_queue:
-            yield message_queue.popleft()
+        yield message_queue.get()
 
 
 # 큐에서 메시지를 꺼내서 작업 진행. 스레드로 사용할것
