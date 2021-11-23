@@ -1,25 +1,32 @@
 from collections import deque
+from queue import Queue
 
 
 class GuiEmit:
     def __init__(self):
-        self.to_handler = deque([])
-        self.to_gui = deque([])
+        self.to_handler = Queue()
 
-    def h_gen(self):
-        while True:
-            if self.to_handler:
-                yield self.to_handler.popleft()
+    def put(self, t: str, d: object):
+        to_put = {
+            't': t,
+            'd': d
+        }
+        self.to_handler.put(to_put, block=False)
+
+    # def h_gen(self):
+    #     while True:
+    #         if self.to_handler:
+    #             yield self.to_handler.popleft()
 
     # def g_gen(self):
     #     while True:
     #         if self.to_gui:
     #             yield self.to_gui.popleft()
 
-    def h_append(self, t: str, d: object):
-        to_emit = {
-            't': t,
-            'd': d
-        }
-        self.to_handler.append(to_emit)
+    # def h_append(self, t: str, d: object):
+    #     to_emit = {
+    #         't': t,
+    #         'd': d
+    #     }
+    #     self.to_handler.append(to_emit)
 

@@ -73,8 +73,9 @@ class OnlineHandler:
         self.gui_emit_thread = threading.Thread(target=self.on_emit, daemon=True)  # online_lobby gui 입력 받아옴.
 
     def on_emit(self):
-        for msg in self.online_data.h_gen():
-            self.parse_emit(msg)
+        while True:
+            data = self.online_data.to_handler.get()
+            self.parse_emit(data)
 
     def parse_emit(self, msg: dict):
         todo = msg['t']
