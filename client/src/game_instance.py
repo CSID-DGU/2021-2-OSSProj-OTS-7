@@ -48,6 +48,7 @@ class GameInstance:
         self.hold_mino = None  # Hold 한 mino
 
         self.status = 'start_screen'  # start_screen, in_game, pause, game_over 등
+        post_event("BGM1")
 
         # self.former_time = None  # 디버그용
         # self.current_time = None  # 디버그용
@@ -334,12 +335,25 @@ class GameInstance:
             self.is_hold_used = False  # 새 미노가 나왔으니 hold 사용 여부 초기화
         else:
             self.status = 'game_over'
+            post_event("BGM_ALL_OFF")
 
-    # 라인 수만큼 현재 goal 감소
+    # 라인 수만큼 현재 goal 감소, level 증가할 때마다 bgm 재생 속도 변경
     def update_goal(self, line_count: int):
         self.goal -= line_count
         if self.goal < 0:
             self.level += 1
+            if self.level == 2:
+                post_event("BGM1_OFF")
+                post_event("BGM2")
+            elif self.level == 3:
+                post_event("BGM2_OFF")
+                post_event("BGM3")
+            elif self.level == 4:
+                post_event("BGM3_OFF")
+                post_event("BGM4")
+            elif self.level > 4:
+                post_event("BGM4_OFF")
+                post_event("BGM4")
             self.goal += self.level * 5
             self.my_item_list.append(choice(self.item_list))  # random.choice
             print(self.my_item_list)
