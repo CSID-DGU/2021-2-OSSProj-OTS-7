@@ -12,7 +12,7 @@
 
 ### Info
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
-![Laguage](https://img.shields.io/badge/python-3.9.7-blue.svg)
+![Laguage](https://img.shields.io/badge/python-3.9-blue.svg)
 
 [PYTRIS](https://github.com/injekim/PYTRIS)의 포크로, 버그 수정과 기능 추가 사항이 있습니다.
 
