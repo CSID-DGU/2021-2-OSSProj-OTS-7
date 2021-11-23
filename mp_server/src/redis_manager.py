@@ -67,8 +67,9 @@ class RedisManager:
     async def waiting_list_remove_and_notice(self, waiter_id):
         try:
             approachers: list = self.waiting.jsonobjkeys(name=waiter_id, path='.approachers')
-            for approacher in approachers:
-                self.msg_broker.publish(channel=approacher, message='hr')
+            if approachers:
+                for approacher in approachers:
+                    self.msg_broker.publish(channel=approacher, message='hr')
         except redis.exceptions.ResponseError:
             print('redis response error! approacher_clear_and_notice()')
         finally:

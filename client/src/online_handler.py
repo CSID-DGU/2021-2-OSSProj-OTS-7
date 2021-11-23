@@ -7,6 +7,8 @@ from .game_instance import GameInstance
 from .components.mino import Mino
 from .launcher.online_lobby import OnlineLobby
 from .launcher.online_data_temp import GuiEmit
+from .consts.urls import URLS
+
 # receiving codes
 RCODES = {
     'game_data': 'gd',
@@ -61,7 +63,7 @@ class OnlineHandler:
         self.current_waiter_list = []
         self.current_approacher_list = []
         self.ws = websocket.WebSocketApp(
-            f"wss://ots.prvt.dev/ws",
+            URLS.mp_server_url,
             on_open=lambda ws: self.on_open(ws),
             on_message=lambda ws, msg: self.on_message(ws, msg),
             on_error=on_error,
@@ -73,8 +75,9 @@ class OnlineHandler:
         self.gui_emit_thread = threading.Thread(target=self.on_emit, daemon=True)  # online_lobby gui 입력 받아옴.
 
     def on_emit(self):
-        for msg in self.online_data.h_gen():
-            self.parse_emit(msg)
+        while True:
+            data = self.online_data.to_handler.get()
+            self.parse_emit(data)
 
     def parse_emit(self, msg: dict):
         todo = msg['t']

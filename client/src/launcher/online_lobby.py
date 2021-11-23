@@ -75,6 +75,29 @@ class OnlineLobby(QWidget):
 
         self.waiting = False
 
+        # self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
+        self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)
+
+    def set_view_waiting(self):
+        self.list_box_waiter.setDisabled(True)
+        self.list_box_approacher.setDisabled(False)
+        self.game_start_btn.setText('Waiting...')
+
+    def set_view_hello(self):
+        self.list_box_waiter.setDisabled(False)
+        self.list_box_approacher.setDisabled(True)
+        self.game_start_btn.setText('Wait for approachers')
+
+    def set_status_waiting(self):
+        self.set_view_waiting()
+        self.waiting = True
+        self.emit_to_handler(t='wa')
+
+    def set_status_hello(self):
+        self.set_view_hello()
+        self.waiting = False
+        self.emit_to_handler(t='wr')
+
     def game_start_btn_clicked(self):
         if not self.waiting:
             self.waiting = True
@@ -144,7 +167,7 @@ class OnlineLobby(QWidget):
             't': t,
             'd': d
         }
-        self.gui_emit.to_handler.append(to_emit)
+        self.gui_emit.to_handler.put(to_emit)
 
     @staticmethod
     def on_server_connection_lost():
