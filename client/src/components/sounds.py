@@ -14,3 +14,8 @@ class SOUNDS:
     sfx_bomb = Sound(Path.sfx_bomb)
     sfx_clock = Sound(Path.sfx_clock)
     sfx_no_item = Sound(Path.sfx_no_item)
+
+    bgm_1 = Sound(Path.bgm_1)
+    bgm_2 = Sound(Path.bgm_2)
+    bgm_3 = Sound(Path.bgm_3)
+    bgm_4 = Sound(Path.bgm_4)
