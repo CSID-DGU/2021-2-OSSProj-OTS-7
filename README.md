@@ -24,7 +24,7 @@
 - pygame의 커스텀 이벤트를 이용하는 event-driven 설계 도입(WIP)
 - QT 5 기반 GUI 런처, 온라인 로비
 - 구동에 필요한 의존성을 포함하여 바이너리 빌드, 배포(예정)
-- 스테이지별 아이템 등의 추가, 개선 요소
+- 스테이지별 아이템 등, 게임  추가, 개선 요소
 
 ### How to play
 ![](client/assets/img/help.png)
