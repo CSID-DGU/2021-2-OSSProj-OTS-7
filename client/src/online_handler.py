@@ -6,7 +6,7 @@ import json
 from .game_instance import GameInstance
 from .components.mino import Mino
 from .launcher.online_lobby import OnlineLobby
-from .launcher.online_data_temp import GuiEmit
+from .launcher.gui_com import GuiCom
 from .consts.urls import URLS
 
 # receiving codes
@@ -51,7 +51,7 @@ class OnlineHandler:
                  game_instance: GameInstance,
                  opponent_instance: GameInstance,
                  online_lobby: OnlineLobby,
-                 online_data: GuiEmit):
+                 online_data: GuiCom):
 
         websocket.enableTrace(True)
         self.status = 'hello'

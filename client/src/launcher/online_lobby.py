@@ -2,13 +2,13 @@ import threading
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QHBoxLayout, \
     QLabel
-from .online_data_temp import GuiEmit
+from .gui_com import GuiCom
 import os
 import signal
 
 
 class OnlineLobby(QWidget):
-    def __init__(self, gui_emit: GuiEmit):
+    def __init__(self, gui_com: GuiCom):
         super().__init__()
         self.player_id = ""
 
@@ -71,7 +71,7 @@ class OnlineLobby(QWidget):
 
         self.dialog = False
 
-        self.gui_emit = gui_emit
+        self.gui_emit = gui_com
 
         self.waiting = False
 
