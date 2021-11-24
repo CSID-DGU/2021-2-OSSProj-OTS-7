@@ -3,7 +3,7 @@ from .display_drawer import DisplayDrawer
 import pygame
 from pygame.locals import *
 from .consts.custom_events import CUSTOM_EVENTS, CUSTOM_EVENTS_REVERSED
-from .components.sounds import SOUNDS
+from .sound_player import SoundPlayer
 
 
 class EventFlags:
@@ -93,6 +93,8 @@ class EventHandler:
         self.event_flags_obj = EventFlags()
         self.event_flags: dict = self.event_flags_obj.dict
 
+        self.sound_player = SoundPlayer()
+
         self.event_func_map_obj = EventFuncMap(self.game_instance)
         self.event_func_map: dict = self.event_func_map_obj.dict
 
@@ -103,7 +105,8 @@ class EventHandler:
 
         self.quit = False
 
-    def custom_event_init(self):
+    @staticmethod
+    def custom_event_init():
         map(pygame.event.Event, CUSTOM_EVENTS.items())  # pygame 이벤트 등록
         # map(pygame.event.Event, sound_play_events.items())  # pygame 이벤트 등록
 
@@ -121,20 +124,28 @@ class EventHandler:
             self.execute_event()
             self.check_key_held()
 
-        elif event.type == CUSTOM_EVENTS['DISPLAY_UPDATE_REQUIRED']:  # 화면 업데이트
-            # self.display_drawer.update_display()
-            pass
+        # elif event.type == CUSTOM_EVENTS['DISPLAY_UPDATE_REQUIRED']:  # 화면 업데이트
+        #     # self.display_drawer.update_display()
+        #     pass
         elif event.type == KEYDOWN:  # 키 입력 이벤트. KEYDOWN은 키가 눌렸을 때, KEYUP은 키가 눌린 후 다시 올라왔을때
             self.on_key_down_event(event)
         elif event.type == KEYUP:
             self.on_key_up_event()
-        elif event.type in CUSTOM_EVENTS.values():
-            self.play_sfx(event.type)
         elif event.type == QUIT:  # 종료시
             # 멀티플레이시 소켓 먼저 닫아야할듯함.
             self.quit = True
-        # elif event.type == VIDEORESIZE:
-
+        elif event.type == CUSTOM_EVENTS['GAME_START']:
+            self.sound_player.update_bgm(self.game_instance.level)
+        elif event.type == CUSTOM_EVENTS['LEVEL_UP']:
+            self.on_level_up()
+        elif event.type == CUSTOM_EVENTS['GAME_OVER']:
+            self.on_game_over()
+        elif event.type == CUSTOM_EVENTS['PAUSE']:
+            self.on_pause()
+        elif event.type == CUSTOM_EVENTS['UNPAUSE']:
+            self.on_unpause()
+        elif event.type in CUSTOM_EVENTS.values():
+            self.play_sfx(event.type)
 
     # key_hold 꾹 누르기 체크
     def check_key_held(self):
@@ -155,19 +166,19 @@ class EventHandler:
 
     # key down event 처리
     def on_key_down_event(self, event):
-        try:
-            if self.game_instance.status == 'in_game':
+        if self.game_instance.status == 'in_game':
+            try:
                 todo = self.event_key_map[event.key]
                 self.event_func_map[todo]()
-            elif self.game_instance.status == 'pause':
-                self.game_instance.ev_pause_game()
-            elif self.game_instance.status == 'start_screen':
-                self.game_instance.status = 'in_game'
-            elif self.game_instance.status == 'game_over':
-                self.game_instance.on_game_over()
-        except KeyError:
-            # print(f'매핑되지 않은 키: {event.key=}')  # 디버그용 주석
-            pass
+            except KeyError:
+                # print(f'매핑되지 않은 키: {event.key=}')  # 디버그용 주석
+                pass
+        elif self.game_instance.status == 'pause' and event.key == K_ESCAPE:
+            self.game_instance.ev_unpause_game()
+        elif self.game_instance.status == 'start_screen':
+            self.game_instance.ev_game_start()
+        elif self.game_instance.status == 'game_over' and event.key == K_SPACE:
+            self.game_instance.ev_game_over_screen_out()
 
     # key_up 시 버퍼 초기화
     def on_key_up_event(self):
@@ -179,50 +190,25 @@ class EventHandler:
         if self.game_instance.status == 'in_game':
             self.game_instance.ev_timer_event()
 
-    @staticmethod
-    def play_sfx(event_type):
-        event = CUSTOM_EVENTS_REVERSED.get(event_type)
-        if event == "BOMB_USED":
-            pygame.mixer.Sound.play(SOUNDS.sfx_bomb)
-        elif event == "CLOCK_USED":
-            pygame.mixer.Sound.play(SOUNDS.sfx_clock)
-        elif event == "NO_ITEM_REMAIN":
-            pygame.mixer.Sound.play(SOUNDS.sfx_no_item)
+    # 레벨 업 이벤트 처리
+    def on_level_up(self):
+        level = self.game_instance.level
+        self.game_instance.level_up()
+        self.sound_player.update_bgm(level)
 
-        elif event == "LINE_ERASED":
-            pygame.mixer.Sound.play(SOUNDS.sfx_single)
-        elif event == "LINE_ERASED_2":
-            pygame.mixer.Sound.play(SOUNDS.sfx_double)
-        elif event == "LINE_ERASED_3":
-            pygame.mixer.Sound.play(SOUNDS.sfx_triple)
-        elif event == "LINE_ERASED_4":
-            pygame.mixer.Sound.play(SOUNDS.sfx_tetris)
+    # 게임 오버 이벤트 처리
+    def on_game_over(self):
+        self.sound_player.stop_music()
 
-        elif event == "MOVE":
-            pygame.mixer.Sound.play(SOUNDS.sfx_move)
-        elif event == "HARD_DROP":
-            pygame.mixer.Sound.play(SOUNDS.sfx_drop)
+    # 일시정지 이벤트
+    def on_pause(self):
+        self.sound_player.pause_bgm()
 
-        elif event == "BGM1":
-            pygame.mixer.Sound.play(SOUNDS.bgm_1)
-        elif event == "BGM2":
-            pygame.mixer.Sound.play(SOUNDS.bgm_2)
-        elif event == "BGM3":
-            pygame.mixer.Sound.play(SOUNDS.bgm_3)
-        elif event == "BGM4":
-            pygame.mixer.Sound.play(SOUNDS.bgm_4)
+    # 일시정지 해제 이벤트
+    def on_unpause(self):
+        self.sound_player.unpause_bgm()
 
-        elif event == "BGM1_OFF":
-            pygame.mixer.Sound.stop(SOUNDS.bgm_1)
-        elif event == "BGM2_OFF":
-            pygame.mixer.Sound.stop(SOUNDS.bgm_2)
-        elif event == "BGM3_OFF":
-            pygame.mixer.Sound.stop(SOUNDS.bgm_3)
-        elif event == "BGM4_OfF":
-            pygame.mixer.Sound.stop(SOUNDS.bgm_4)
-
-        elif event == "BGM_ALL_OFF":
-            pygame.mixer.Sound.stop(SOUNDS.bgm_1)
-            pygame.mixer.Sound.stop(SOUNDS.bgm_2)
-            pygame.mixer.Sound.stop(SOUNDS.bgm_3)
-            pygame.mixer.Sound.stop(SOUNDS.bgm_4)
+    # 효과음 재생
+    def play_sfx(self, event_type):
+        to_play = CUSTOM_EVENTS_REVERSED.get(event_type)
+        self.sound_player.play_sfx(to_play)

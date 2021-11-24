@@ -14,7 +14,6 @@ def new_mino():
 
 def post_event(custom_event):  # variables/custom_events 참조
     pygame.event.post(pygame.event.Event(CUSTOM_EVENTS[custom_event]))
-    pass
 
 
 class GameInstance:
@@ -30,7 +29,7 @@ class GameInstance:
 
         self.score = 0
         self.level = 1
-        self.goal = self.level * 5
+        self.goal = 5
         self.freeze_time_count = tv.BASE_FREEZE_COUNT  # 미노가 바닥에 닿았을 때 카운트
         self.is_hard_dropped = False  # 현재 미노를 하드드롭 했는지 여부, freeze 관련해서 필요한 변수
 
@@ -48,7 +47,6 @@ class GameInstance:
         self.hold_mino = None  # Hold 한 mino
 
         self.status = 'start_screen'  # start_screen, in_game, pause, game_over 등
-        post_event("BGM1")
 
         # self.former_time = None  # 디버그용
         # self.current_time = None  # 디버그용
@@ -143,7 +141,25 @@ class GameInstance:
     def display_update():
         post_event('DISPLAY_UPDATE_REQUIRED')
 
-    # ############ 이하 이벤트 핸들러가 다루는 메소드 #############
+    # ############ 이하 이벤트 핸들러가 실행하는 메소드 #############
+    def ev_game_start(self):
+        self.status = 'in_game'
+        post_event('GAME_START')
+
+    # 게임 오버시
+    def ev_game_over_screen_out(self):
+        if not self.is_multiplayer:  # 온라인이면 불가
+            self.reset()
+
+    def ev_pause_game(self):
+        if not self.is_multiplayer:
+            self.status = 'pause'
+            post_event('PAUSE')
+
+    def ev_unpause_game(self):
+        self.status = 'in_game'
+        post_event('UNPAUSE')
+
     def ev_hard_drop(self):
         self.hard_drop()
         self.is_hard_dropped = True
@@ -200,25 +216,19 @@ class GameInstance:
         if not self.is_hold_used:
             self.move(self.hold_current_mino)
 
-    def ev_pause_game(self):
-        if not self.is_multiplayer:
-            if self.status == 'in_game':
-                self.status = 'pause'
-            elif self.status == 'pause':
-                self.status = 'in_game'
-
     def ev_use_item(self):
         self.move(self.use_item)
     # ############ 이하 동작 메소드 #############
+
     def move_down(self):
         self.y += 1
         self.move_down_count_reset()
 
     def move_down_count_reset(self):
         if self.clock_used:
-            self.move_down_count = (tv.BASE_MOVE_DOWN_COUNT + 1 - self.level) * 2
+            self.move_down_count = (tv.BASE_MOVE_DOWN_COUNT + 2 - self.level*2) * 2
         else:
-            self.move_down_count = tv.BASE_MOVE_DOWN_COUNT + 1 - self.level
+            self.move_down_count = tv.BASE_MOVE_DOWN_COUNT + 2 - self.level*2
 
     # 하강 카운트
     def count_move_down(self):
@@ -252,9 +262,6 @@ class GameInstance:
             self.freeze_time_count = tv.BASE_FREEZE_COUNT
             self.x, self.y = 3, 0
             self.current_mino, self.hold_mino = self.hold_mino, self.current_mino
-
-    def pause_game(self):
-        pass
 
     # 회전, 우회전 'r', 좌회전 'l', 기본값은 'r', x_mod, y_mod 는 현재 미노 위치 기준으로 움직였을 때의 가능 여부 판별을 위해 있음.
     def rotate(self, right_or_left='r', x_mod=0, y_mod=0):
@@ -335,30 +342,21 @@ class GameInstance:
             self.is_hold_used = False  # 새 미노가 나왔으니 hold 사용 여부 초기화
         else:
             self.status = 'game_over'
-            post_event("BGM_ALL_OFF")
+            post_event("GAME_OVER")
 
     # 라인 수만큼 현재 goal 감소, level 증가할 때마다 bgm 재생 속도 변경
     def update_goal(self, line_count: int):
         self.goal -= line_count
         if self.goal < 0:
-            self.level += 1
-            if self.level == 2:
-                post_event("BGM1_OFF")
-                post_event("BGM2")
-            elif self.level == 3:
-                post_event("BGM2_OFF")
-                post_event("BGM3")
-            elif self.level == 4:
-                post_event("BGM3_OFF")
-                post_event("BGM4")
-            elif self.level > 4:
-                post_event("BGM4_OFF")
-                post_event("BGM4")
-            self.goal += self.level * 5
-            self.my_item_list.append(choice(self.item_list))  # random.choice
-            print(self.my_item_list)
+            post_event('LEVEL_UP')
 
-    #         TODO: : my_item blit 띄우기
+    def level_up(self):
+        self.level += 1
+        self.goal = self.level * 5
+        self.add_random_item()
+
+    def add_random_item(self):
+        self.my_item_list.append(choice(self.item_list))
 
     def change_to_next_mino(self):
         self.x = 3
@@ -420,7 +418,3 @@ class GameInstance:
             self.clock_used = False
             self.clock_count = tv.BASE_MOVE_DOWN_COUNT
 
-    # 게임 오버시
-    def on_game_over(self):
-        if not self.is_multiplayer:
-            self.reset()
