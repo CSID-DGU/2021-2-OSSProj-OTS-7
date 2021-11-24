@@ -48,7 +48,3 @@ class LoginWindow(LoginWindowView):
         #     self.close()
         # else:
         #     print("fail")
-
-    def send_name_data(self, data):
-        self.oq.name_label.setText("my name : " + data)
-        self.oq.player_id = self.player_id
