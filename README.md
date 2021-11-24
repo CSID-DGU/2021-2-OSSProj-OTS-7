@@ -30,7 +30,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
 ![Language](https://img.shields.io/badge/python-3.9-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.70.0-important)
-![rejson](https://img.shields.io/badge/rejson-0.70.0-important)
+![rejson](https://img.shields.io/badge/rejson-0.5.6-important)
 
 FastAPI와 rejson을 기반으로 하는 온라인 중계 서버입니다. Uvicorn(Gunicorn), Redis(with RedisJSON module) 환경에서 구동됩니다.
 - 웹소켓 기반 클라이언트 연결
