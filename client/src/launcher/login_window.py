@@ -13,9 +13,9 @@ class LoginWindowView(QWidget):
         self.setGeometry(150, 150, 200, 200)
         self.setWindowTitle('OTS')
 
-        self.input_email = QLineEdit()
-        self.input_email.setPlaceholderText('email 입력')
-        self.layout.addWidget(self.input_email)
+        self.input_name = QLineEdit()
+        self.input_name.setPlaceholderText('email 입력')
+        self.layout.addWidget(self.input_name)
         self.input_pwd = QLineEdit()
         self.input_pwd.setPlaceholderText('비밀번호 입력')
         self.layout.addWidget(self.input_pwd)
@@ -38,7 +38,7 @@ class LoginWindow(LoginWindowView):
 
     def on_login_btn_clicked(self):
         print('asd')
-        self.player_id = self.input_email.text()
+        self.player_id = self.input_name.text()
         self.run_online()
         self.close()
         # res = request_login(self.input_email.text(), self.input_pwd.text())
