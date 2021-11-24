@@ -15,18 +15,15 @@ window.onload = () => {
         const btnSignup = document.getElementById('btnSignup');
 
         btnSignup.addEventListener('click',()=>{
-            let email = inputEmail.value;
-            let password = inputPassword.value;
             let name = inputName.value;
-            console.log(email, password, name);
+            let password = inputPassword.value;
+            console.log(name, password);
 
-            signup(email, password, name)
+            signup(name, password)
                 .then(data => {
                     if(data.msg == "success") {
                         alert('Success SignUp');
                         window.location.href = "/";
-                    } else if(data.msg == "duplicate_email") {
-                        alert('이메일 중복입니다.');
                     } else if(data.msg == "duplicate_name"){
                         alert('이름 중복입니다.')
                     }
@@ -48,8 +45,8 @@ window.onload = () => {
                     'Content-Type' : 'application/json'
                 },
                 body : JSON.stringify({
-                    email : inputEmailLogin.value,
-                    password : inputPasswordLogin.value
+                    name : nameLogin.value,
+                    password : passwordLogin.value
                 })
             })
             .then(res => res.json())
@@ -66,7 +63,7 @@ window.onload = () => {
         });
     }
 
-    function signup(email, password, name) {
+    function signup(name,password) {
         return new Promise((resolve, reject) => {
             fetch('/signup/createUser',{
                 method : 'POST',
@@ -74,9 +71,8 @@ window.onload = () => {
                     'Content-Type' : 'application/json'
                 },
                 body : JSON.stringify({
-                    'email' : email,
+                    'name' : name,
                     'password' : password,
-                    'name' : name
                 })
             })
             .then(result => {
