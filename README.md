@@ -32,7 +32,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.70.0-important)
 ![rejson](https://img.shields.io/badge/rejson-0.70.0-important)
 
-FastAPI와 Redis + JSON 모듈을 기반으로 하는 온라인 중계 서버입니다. 
+FastAPI와 rejson을 기반으로 하는 온라인 중계 서버입니다. Uvicorn(Gunicorn), Redis(with RedisJSON module) 환경에서 구동됩니다.
 - 웹소켓 기반 클라이언트 연결
 - Redis의 Message Broker 기능을 이용한 Worker-Process 간의 통신
 - 비동기 IO 처리
