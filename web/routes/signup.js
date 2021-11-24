@@ -5,24 +5,15 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 router.post('/createUser', (req, res, next) => {
-    const {email, password, name} = req.body;
+    const {name, password} = req.body;
     var userType = "User";
-
-    if ((email && password && name) === 0) {
+    if ((password && name) === 0) {
         res.status(400).send('bad Request');
     }
-
-    // findUser
-    checkEmail(email)
-        .then((user) => {
-            if (user != null)
-                return res.json({msg: "duplicate_email"}); // email 중복
-            else{
                 checkName(name)
                 .then((user_) => {
                     if (user_ != null)
                         return res.json({msg: "duplicate_name"}); // name 중복
-
                     crypto.randomBytes(64, (err, buf) => { // 64bit random salt 생성 후  pbkdf2 적용 (10만번 반복)
                         const salt = buf.toString('base64');
                         crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, key) => {
@@ -33,7 +24,7 @@ router.post('/createUser', (req, res, next) => {
                             .then(count => { // 첫번째 등록자를 Admin으로 설정
                                 if(count == 0) userType = "Admin";
 
-                                createUser(email, hashPwd, name, userType, salt)
+                                createUser(hashPwd, name, userType, salt)
                                 .then(() => {
                                     console.log("createUser success");
                                     return res.status(200).json({msg: "success"});
@@ -45,15 +36,15 @@ router.post('/createUser', (req, res, next) => {
                             })
                         });
                     });
-                })
-            }
-        })
-});
 
-function createUser(email, password, name, userType, salt) {
+                })
+            })
+//         })
+// });
+
+function createUser(password, name, userType, salt) {
     return new Promise(function (resolve, reject) {
         User.create({
-            email: email,
             password: password,
             name: name,
             userType: userType,
@@ -61,11 +52,9 @@ function createUser(email, password, name, userType, salt) {
         })
         .then(() => {
             History.create({
-            email : email,
             name : name
             })
             resolve();
-
         })
         .catch((err) => {
             reject(err);
@@ -73,17 +62,6 @@ function createUser(email, password, name, userType, salt) {
     })
 }
 
-function checkEmail (email) {
-    return new Promise((resolve, reject) => {
-        User.findOne({where: {email}})
-            .then(result => {
-                resolve(result);
-            })
-            .catch(err => {
-                resolve(err);
-            });
-    })
-}
 
 //TODO
 //check name 추가

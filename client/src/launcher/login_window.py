@@ -24,9 +24,9 @@ class LoginWindow(QWidget):
         self.setGeometry(150, 150, 200, 200)
         self.setWindowTitle('OTS')
 
-        self.input_email = QLineEdit()
-        self.input_email.setPlaceholderText('email 입력')
-        self.layout.addWidget(self.input_email)
+        self.input_name = QLineEdit()
+        self.input_name.setPlaceholderText('name 입력')
+        self.layout.addWidget(self.input_name)
         self.input_pwd = QLineEdit()
         self.input_pwd.setPlaceholderText('비밀번호 입력')
         self.layout.addWidget(self.input_pwd)
@@ -74,7 +74,7 @@ class LoginWindow(QWidget):
 
     def login_btn_clicked(self):
         # res = requests.post(self.login_url,
-        #                     data={'email': self.input_email.text(), 'password': self.input_pwd.text()})
+        #                     data={'name': self.input_name.text(), 'password': self.input_pwd.text()})
         # self.player_id = res.json()['msg']
         # if res.json()['msg'] != "failed":
         #     print("login")
@@ -86,7 +86,7 @@ class LoginWindow(QWidget):
         #
         # else:
         #     print("fail")
-        self.player_id = self.input_email.text()
+        self.player_id = self.input_name.text()
         self.send_name_data(self.player_id)
         self.run_online()
         self.setVisible(False)
