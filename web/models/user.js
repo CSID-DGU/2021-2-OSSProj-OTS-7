@@ -1,10 +1,5 @@
 module.exports = (sequelize, DataTypes)=>{
     return sequelize.define('user',{
-        email : {
-            type : DataTypes.TEXT,
-            allowNull: false
-//             unique: true,
-        },
         password : {
             type : DataTypes.TEXT,
             allowNull: false,
