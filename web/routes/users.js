@@ -5,11 +5,10 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 router.post('/login', async(req, res, next) => {
-    const {email, password} = req.body;
-
-    findSalt(email)
+    const {name, password} = req.body;
+    findSalt(name)
         .then((doc) => createHash(password, doc.salt)) // password hash
-        .then((hashedPassword) => findUser(email, hashedPassword)) // User DB에서 사용자 검색
+        .then((hashedPassword) => findUser(name, hashedPassword)) // User DB에서 사용자 검색
         .then((user) => {
         console.log()
             if (user == null) {
@@ -19,18 +18,18 @@ router.post('/login', async(req, res, next) => {
             res.json({msg: user}); // 회원정보 존재
             return;
             }
-            let accessToken = jwt.sign({email, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
+            let accessToken = jwt.sign({name, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
                 process.env.JWT_SECRET_ACCESS, {expiresIn: '30m'});
 
-            let refreshToken = jwt.sign({email, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
+            let refreshToken = jwt.sign({name, type: user.userType, verified: user.verified}, // jwt 생성 후 토큰 반환
                 process.env.JWT_SECRET_REFRESH, {expiresIn: '60m'});
 
-            req.cache.set(email, refreshToken);
-            req.expire(email, 60 * 10);
+            req.cache.set(name, refreshToken);
+            req.expire(name, 60 * 10);
             return accessToken
         })
         .then(token => { // save access_token in redis
-            const parsedKey = 'access_' + email;
+            const parsedKey = 'access_' + name;
             console.log("parsedKey: ", parsedKey);
             return saveRedis(req, parsedKey, token, 60 * 5);
         }) 
@@ -50,11 +49,11 @@ router.post('/logout', async(req, res, next) => {
     return res.json({msg: "success"});
 });
 
-function findUser(email, password) {
+function findUser(name, password) {
     return new Promise(function (resolve, reject) {
         User.findOne({
             where: {
-                "email": email,
+                "name": name,
                 "password": password
             }
         })
@@ -68,9 +67,9 @@ function findUser(email, password) {
     })
 }
 
-function findSalt (email) {
+function findSalt (name) {
     return new Promise((resolve, reject) => {
-        User.findOne({where: {email : email}})
+        User.findOne({where: {name : name}})
             .then(result => {
                 resolve(result);
             })
