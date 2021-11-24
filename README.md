@@ -26,9 +26,6 @@
 - 구동에 필요한 의존성을 포함하여 바이너리 빌드, 배포(예정)
 - 스테이지별 아이템 등, 게임  추가, 개선 요소
 
-### How to play
-![](client/assets/img/help.png)
-
 # MultiPlayer Server
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
 ![Language](https://img.shields.io/badge/python-3.9-blue.svg)
