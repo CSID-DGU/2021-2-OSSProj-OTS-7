@@ -22,12 +22,14 @@ def init_objs(player_id: (str, None), is_mp: bool) -> tuple:
 
     if is_mp:
         gui_com = GuiCom()
-        online_lobby = OnlineLobby(gui_com)
-        online_handler = OnlineHandler(user_id=player_id,
-                                       game_instance=game_instance,
-                                       opponent_instance=opponent_game_instance,
-                                       online_data=gui_com,
-                                       online_lobby=online_lobby)
+        online_lobby = OnlineLobby(gui_com, player_id)
+        online_handler = OnlineHandler(
+            user_id=player_id,
+            game_instance=game_instance,
+            opponent_instance=opponent_game_instance,
+            online_data=gui_com,
+            online_lobby=online_lobby
+        )
     else:
         online_handler = None
         online_lobby = None
