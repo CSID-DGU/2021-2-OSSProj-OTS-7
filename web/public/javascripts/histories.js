@@ -1,5 +1,4 @@
 window.onload = () => {
-
   init();
 
   function init() {
@@ -11,23 +10,24 @@ window.onload = () => {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          'name': inputName.value
-        })
+          name: inputName.value,
+        }),
       })
-      .then(res => res.json())
-      .then(json => {
-        if (json.msg === "success finding") {
-          alert("success Finding");
-          window.location.href = '/users';
-        } else {
-          alert("failed Finding");
-        }
-      }).catch(err => {
-        console.log(err);
-      });
+        .then((res) => res.json())
+        .then((json) => {
+          if (json.msg === 'success finding') {
+            alert('success Finding');
+            window.location.href = '/users';
+          } else {
+            alert('failed Finding');
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     });
   }
-}
+};

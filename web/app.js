@@ -6,22 +6,21 @@ const dotenv = require('dotenv');
 const redis = require('redis');
 const logger = require('morgan');
 dotenv.config();
-
 // port
 var port = process.env.PORT || 8080;
-app.listen(port, function(){
-    console.log("Express server has started on port " + port)
+app.listen(port, function () {
+  console.log('Express server has started on port ' + port);
 });
 
 // sequelize
-var {sequelize} = require('./models/index');
+var { sequelize } = require('./models/index');
 sequelize.sync();
 
 // redis connect
-app.use((req,res,next)=>{
-    const redisClient = redis.createClient(6379,'localhost');
-    req.cache = redisClient;
-    next();
+app.use((req, res, next) => {
+  const redisClient = redis.createClient(6379, 'localhost');
+  req.cache = redisClient;
+  next();
 });
 
 // view engine
@@ -42,13 +41,11 @@ const admin = require('./routes/admin');
 const signup = require('./routes/signup');
 const histories = require('./routes/histories');
 
-
 app.use('/', index);
 app.use('/users', users);
-app.use('/main',main);
-app.use('/admin',admin);
+app.use('/main', main);
+app.use('/admin', admin);
 app.use('/signup', signup);
-app.use('/histories', histories)
-
+app.use('/histories', histories);
 
 module.exports = app;

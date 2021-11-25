@@ -1,20 +1,18 @@
 window.onload = () => {
-
   const userTable = document.getElementById('userTable');
 
   init();
 
   function init() {
     fetch('/histories/findUser')
-    .then(data => data.json())
-    .then(result => {
-      setTable(result);
-      console.log(result)
-    });
+      .then((data) => data.json())
+      .then((result) => {
+        setTable(result);
+        console.log(result);
+      });
   }
   //라우터에서 처리해야할듯
   function setTable(userList) {
-
     for (let index = 0; index < userList.length; index++) {
       const tr = document.createElement('tr');
       const userNum = document.createElement('td');
