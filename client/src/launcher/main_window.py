@@ -57,7 +57,7 @@ class LauncherView(QWidget):
         pass
 
 
-class Launcher(LauncherView, QWidget):
+class Launcher(LauncherView):
     def __init__(self):
         super().__init__()
         self.lw = LoginWindow()

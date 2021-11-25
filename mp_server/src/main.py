@@ -3,7 +3,6 @@ from .redis_manager import RedisManager
 from .user_instance import UserInstance
 from .message_executors import UserMsgExecutor, ServerMsgExecutor
 from queue import Queue
-from concurrent.futures import ThreadPoolExecutor
 import threading
 import asyncio
 import json

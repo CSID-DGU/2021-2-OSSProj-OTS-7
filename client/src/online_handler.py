@@ -76,7 +76,7 @@ class OnlineHandler:
 
     def on_emit(self):
         while True:
-            data = self.online_data.to_handler.get()
+            data = self.online_data.handler_queue.get()
             self.parse_emit(data)
 
     def parse_emit(self, msg: dict):
@@ -121,7 +121,9 @@ class OnlineHandler:
         print("### closed ###")
         print(f'{close_status_code}')
         print(f'{close_msg}')
-        self.online_lobby_gui.on_server_connection_lost()  # 연결 끊어졌을 때 종료창 띄움.
+        # self.online_lobby_gui.on_server_connection_lost()  # 연결 끊어졌을 때 종료창 띄움.
+        # self.online_lobby_gui.server_connected = False
+        self.online_lobby_gui.signal.emit('server_connection_lost')
 
     # 웹소켓 연결
     def ws_connect(self):
@@ -229,6 +231,7 @@ class OnlineHandler:
 
     def r_host_rejected(self):
         self.status = 'hello'
+        self.online_lobby_gui.signal.emit('approach_rejected')
         # self.online_lobby_gui.approaching_msg_box.close()
 
     def r_parse_hello(self, t, d):
