@@ -1,20 +1,18 @@
 window.onload = () => {
-
   const userTable = document.getElementById('userTable');
 
   init();
 
   function init() {
     fetch('/histories/userList')
-    .then(data => data.json())
-    .then(result => {
-      setTable(result);
-      console.log(result)
-    });
+      .then((data) => data.json())
+      .then((result) => {
+        setTable(result);
+        console.log(result);
+      });
   }
 
   function setTable(userList) {
-
     for (let index = 0; index < userList.length; index++) {
       const tr = document.createElement('tr');
       const userNum = document.createElement('td');
