@@ -35,7 +35,7 @@ class RedisManager:
 
     # 레디스 메시지 채널 구독
     def initial_subscribe(self):
-        to_subscribe = ['waiting']  # test
+        to_subscribe = ['$waiting']  # test
         self.msg_pubsub.subscribe(to_subscribe)
 
     async def waiting_list_get(self) -> list:
@@ -79,7 +79,7 @@ class RedisManager:
         self.match_ids.set(approacher_id, host_id)
         self.match_ids.set(host_id, host_id)
 
-    async def player_match_id_get(self, player_id: str):  # 플레이어의 매치 id 반환
+    async def match_id_get(self, player_id: str):  # 플레이어의 매치 id 반환
         return self.match_ids.get(player_id)
 
     async def player_match_id_clear(self, player_id: str):  # 플레이어에게 할당된 매치 id 제거
@@ -104,29 +104,45 @@ class RedisManager:
         return self.session.jsonget(match_id, '.game_over')
 
     async def game_over_user(self, player_id: str):
-        match_id = await self.player_match_id_get(player_id)
+        match_id = await self.match_id_get(player_id)
         self.session.jsonarrappend(match_id, '.game_over', player_id)
 
-    async def game_session_data_set(self, match_id, player_id, data):  # 게임 데이터 클라이언트에게 받아서 보냄
+    async def get_game_winner(self, match_id):
+        session_info: dict = self.session.jsonget(match_id)
+        session_info.pop('game_over')
+        players = []
+        scores = []
+
+        for key in session_info.keys():
+            players.append(key)
+            scores.append(session_info['key']['score'])
+
+        if scores[0] > scores[1]:
+            return players[0]
+        else:
+            return players[1]
+
+    async def game_session_data_set(self, match_id, player_id, data):  # 게임 데이터 클라이언트에게 받아서 Redis 에 저장
         try:
-            self.session.jsonset(name=match_id, path=f'.{player_id}', obj=data)
+            if data:
+                self.session.jsonset(name=match_id, path=f'.{player_id}', obj=data)
+            else:
+                print(f'Invalid game data {data=}')
         except redis.exceptions.ResponseError:
             print(f'game session data set failed. \n{player_id=}\n{match_id=}\n{data=}')
 
     async def game_data_opponent_get(self, match_id, player_id) -> dict:  # 상대방 게임 정보만 return
         raw = self.session.jsonget(match_id)
         raw.pop(player_id)  # 자신 데이터만 뺌
-        print(raw)
         return raw
 
     async def game_session_clear(self, match_id: str):
         self.session.delete(str(match_id))
 
     async def user_connection_closed(self, player_id):
-        p_match_id = self.player_match_id_get(player_id)
+        p_match_id = await self.match_id_get(player_id)  # 매치 아이디
         if await p_match_id is not None:  # 현재 게임중인지 확인
-            gd = await self.game_data_opponent_get(p_match_id, player_id)
-            op_id = gd.get('id')  # 상대 아이디 확인
+            op_id = await self.get_opponent(p_match_id, player_id)  # 상대 id 확인
             self.msg_broker.publish(channel=op_id, message='go')  # 게임중인 상대에게 게임 오버 신호 보내기 todo 상수 참조
             await self.player_match_id_clear(player_id)  # 플레이어에게 할당된 매치 아이디 제거
         await self.waiting_list_remove_and_notice(player_id)  # 대기중이었을 경우 approacher 들에게 알림.

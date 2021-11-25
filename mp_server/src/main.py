@@ -47,14 +47,14 @@ def server_message_process(loop):
 async def server_message_exec(msg):
     msg_type = msg.get('type')
     channel: str = msg.get('channel')  # user_id 가 채널
-    if channel != 'waiting':
+    if channel != '$waiting':
         try:
             user: UserInstance = players_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
             if msg_type == 'message':
                 await sme.server_msg_exec(user, msg)
         except KeyError:
             print('player connection object does not exist')
-    elif channel == 'waiting':
+    elif channel == '$waiting':
         for user in players_dict.values():
             await sme.send_waiters(user)
 
@@ -71,7 +71,7 @@ async def user_instance_create(websocket: WebSocket) -> UserInstance:
     rd_manager.msg_pubsub.subscribe(player_id)  # redis player_id 채널 구독
     user_instance = UserInstance(player_id=player_id, websocket=websocket)
     players_dict[player_id] = user_instance
-    rd_manager.msg_broker.publish('waiting', '')
+    rd_manager.msg_broker.publish('$waiting', '')
     return user_instance
 
 

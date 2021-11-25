@@ -3,6 +3,7 @@ from pygame.draw import rect
 from ..consts.ui_consts import UI_CONSTS as CONSTS
 from ..components.fonts import FONTS
 from ..consts.asset_paths import Path
+from ..consts.strings import STRINGS
 from .mino import Mino
 from pygame import Rect
 
@@ -64,11 +65,11 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
     # item image
     bomb_image = pygame.image.load(Path.bomb_image)
     bomb_image = pygame.transform.scale(bomb_image, (30, 30))
-    left_bomb = pygame.transform.scale(bomb_image, (15, 15))
+    bomb_left = pygame.transform.scale(bomb_image, (15, 15))
 
     clock_image = pygame.image.load(Path.clock_image)
     clock_image = pygame.transform.scale(clock_image, (30, 30))
-    left_clock = pygame.transform.scale(clock_image, (15, 15))
+    clock_left = pygame.transform.scale(clock_image, (15, 15))
 
     # 현재 사용 가능한 item, Left item 보여줌
     if game_instance.my_item_list:
@@ -77,8 +78,8 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
         elif game_instance.my_item_list[0] == "clock":
             screen.blit(clock_image, [x_mod + 215, 335])
 
-    screen.blit(left_bomb, [x_mod + 255, 335])
-    screen.blit(left_clock, [x_mod + 255, 355])
+    screen.blit(bomb_left, [x_mod + 255, 335])
+    screen.blit(clock_left, [x_mod + 255, 355])
 
     # texts
     # TODO 하드코딩 수정할것
@@ -120,6 +121,13 @@ def draw_game_instance(game_instance, screen, x_mod: int = 0):
             dx = x_mod + 17 + BLOCK_SIZE * x
             dy = 17 + BLOCK_SIZE * y
             draw_block(dx, dy, CONSTS.t_color[game_instance.board.temp_matrix[x][y + 1]], screen)
+
+    # 게임 오버시 덮어씀
+    if game_instance.status == 'game_over':
+        over_text_1 = FONTS.h2_b.render(STRINGS.game, True, CONSTS.white)
+        over_text_2 = FONTS.h2_b.render(STRINGS.over, True, CONSTS.white)
+        screen.blit(over_text_1, (58 + x_mod, 75))
+        screen.blit(over_text_2, (62 + x_mod, 105))
 
 
 # Draw game screen

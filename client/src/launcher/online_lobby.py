@@ -131,7 +131,7 @@ class OnlineLobby(OnlineLobbyView):
 
     def waiter_list_item_clicked(self, item):
         self.list_item_msg_box_dialog(item, t='a', msg='에게 대결 제안')
-        # self.waiter_approaching_dialog()
+        self.waiter_approaching_dialog()
 
     def waiter_approaching_dialog(self):
         self.approaching_msg_box.show()
@@ -139,7 +139,7 @@ class OnlineLobby(OnlineLobbyView):
         msg_box_return = self.approaching_msg_box.exec()
         if msg_box_return == QMessageBox.Cancel:
             self.emit_to_handler(t='ac')
-            # self.approaching_msg_box.close()
+            self.approaching_msg_box.close()
 
     def list_item_msg_box_dialog(self, item, t: str, msg: str, alt_t: str = None):
         # t - 코드, msg- 표시될 텍스트, alt_t - 취소시 실행할 코드
@@ -180,21 +180,26 @@ class OnlineLobby(OnlineLobbyView):
     def emit_to_handler(self, t: str, d: object = None):
         self.gui_emit.to_handler(t, d)
 
-    def signal_parse(self, sig: object):
-        if sig == 'server_connection_lost':
+    def signal_parse(self, sig: dict):
+        if sig['t'] == 'server_connection_lost':
             self.on_server_connection_lost()
-        elif sig == 'approach_rejected':
+        elif sig['t'] == 'already_approaching':
+            self.on_already_approaching(sig['d'])
+        elif sig['t'] == 'approach_rejected':
             self.on_approach_rejected()
-
-    def on_approach_rejected(self):
-        self.approaching_msg_box.close()
 
     def on_server_connection_lost(self):
         msg_box = QtWidgets.QMessageBox()
         msg_box.critical(self, 'Server Connection Lost', '서버와의 연결이 끊어졌습니다.')
         msg_box.resize(100, 80)
         msg_box.setStandardButtons(QMessageBox.Ok)
-        res = msg_box.exec()
-        if res == QMessageBox.Ok:
+        res = msg_box.result()
+        if res == 0:  # msg_box 버튼 눌렀을 때
             os.kill(os.getpid(), signal.SIGTERM)  # POSIX 신호인데 윈도우에서 일단 동작을 함.
 
+    def on_already_approaching(self, d: str):  # 대기 취소 후 재시도
+        self.emit_to_handler(t='ac')
+        self.emit_to_handler(t='a', d=d)
+
+    def on_approach_rejected(self):
+        self.approaching_msg_box.close()

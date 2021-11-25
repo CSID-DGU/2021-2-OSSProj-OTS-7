@@ -88,8 +88,13 @@ class OnlineHandler:
         elif todo == SCODES['host_reject']:
             self.s_host_reject(data)
         elif todo == SCODES['approach']:
-            self.s_approach(data)
-            self.status = 'approaching'
+            if not self.status == 'approaching':
+                self.s_approach(data)
+                self.status = 'approaching'
+            elif self.status != 'approaching':
+                sig = self.build_dict(t='already_approaching')
+                self.online_lobby_gui.signal.emit(sig)
+
         elif todo == SCODES['approach_cancel']:
             self.s_approach_cancel()
             self.status = 'hello'
@@ -102,7 +107,7 @@ class OnlineHandler:
         elif todo == SCODES['waiting_list_get']:
             self.s_waiting_list_get()
 
-    def on_open(self, ws):
+    def on_open(self, ws):  # 연결될때 전송, JWT 인증 필요
         ws.send(self.user_id)
 
     def on_message(self, ws, message):
@@ -121,9 +126,8 @@ class OnlineHandler:
         print("### closed ###")
         print(f'{close_status_code}')
         print(f'{close_msg}')
-        # self.online_lobby_gui.on_server_connection_lost()  # 연결 끊어졌을 때 종료창 띄움.
-        # self.online_lobby_gui.server_connected = False
-        self.online_lobby_gui.signal.emit('server_connection_lost')
+        sig = self.build_dict(t='server_connection_lost')
+        self.online_lobby_gui.signal.emit(sig)  # 서버 연결 끊어짐 알림
 
     # 웹소켓 연결
     def ws_connect(self):
@@ -196,13 +200,13 @@ class OnlineHandler:
                 self.opponent_instance.hold_mino = Mino(hold_mino_index)
 
     def r_on_lose(self):
-        pass
+        self.game_instance.status = 'mp_lose'
 
     def r_on_win(self):
-        pass
+        self.game_instance.status = 'mp_win'
 
     def r_on_op_game_over(self):
-        pass
+        self.opponent_instance.status = 'game_over'
 
     def r_on_match_complete(self):
         self.game_instance.status = 'mp_hello'  # todo 게임 인스턴스 상태 상수화
@@ -248,11 +252,16 @@ class OnlineHandler:
     def send_json_req(self, req):
         self.ws.send(json.dumps(req))
 
-    def build_and_send_json_req(self, t: str, d=None):
-        req = {
+    @staticmethod
+    def build_dict(t: str, d=None):
+        to_return = {
             't': t,
             'd': d
         }
+        return to_return
+
+    def build_and_send_json_req(self, t: str, d=None):
+        req = self.build_dict(t, d)
         self.send_json_req(req=req)
 
     def s_waiting_list_add(self):
