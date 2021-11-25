@@ -67,44 +67,50 @@ class ServerMsgExecutor:
         elif mc == SERVER_CODES['approacher_updated']:  # approachers 정보 갱신
             await self.send_approachers(user)
         elif mc == SERVER_CODES['game_over']:  # 상대방이 게임오버됨.
-            await self.send_op_game_over(user)
+            await self.op_game_over(user)
         elif mc == SERVER_CODES['host_accepted']:  # 대결 제안 수락됨.
             await self.host_accepted(user)
         elif mc == SERVER_CODES['host_rejected']:  # 대결 제안 거절됨.
             await self.host_rejected(user)
         elif mc == SERVER_CODES['waiter_list']:  # 대기열 전송
             await self.send_waiters(user)
-        elif mc == SERVER_CODES['match_complete']:
-            pass
+        elif mc == SERVER_CODES['loser'] or mc == SERVER_CODES['winner']:  # 매치 종료
+            await self.match_complete(user=user, code=mc)
         elif mc == SERVER_CODES['game_start']:
             await self.send_start_signal(user)
         else:  # 해당하지 않는 경우 msg_code_map 에 있는 단순 상태 코드만 전송함.
             if mc in SERVER_CODES.values():
-                await self.send_event(user, mc)
+                await self.send_user_code(user, mc)
 
     # 이하 서버 명령으로 실행되는 메소드
     async def game_data_out(self, user: UserInstance):
-        user.current_match_id = await self.rdm.player_match_id_get(player_id=user.player_id)
+        user.current_match_id = await self.rdm.match_id_get(player_id=user.player_id)
         op_game_data: dict = await self.rdm.game_data_opponent_get(user.current_match_id, user.player_id)
         for val in op_game_data.values():
             to_send = build_dict(SERVER_CODES['game_data'], val)
             print(to_send)
             await user.ws.send_json(to_send)
 
-    async def send_start_signal(self, user: UserInstance):
+    async def send_start_signal(self, user: UserInstance):  # 게임 시작과 동시에 유저 객체에 매치 ID와 상대 정보 저장
         user.status = 'in_game'
-        await self.send_event(user, USER_RCODES['game_start'])
+        user.current_match_id = await self.rdm.match_id_get(user.player_id)
+        user.opponent = await self.rdm.get_opponent(match_id=user.current_match_id, player_id=user.player_id)
+        await self.send_user_code(user, USER_RCODES['game_start'])
 
-    async def send_op_game_over(self, user: UserInstance):
-        await self.send_event(user, USER_RCODES['game_over'])
+    async def op_game_over(self, user: UserInstance):
+        await self.send_user_code(user, USER_RCODES['game_over'])
 
     async def host_accepted(self, user: UserInstance):
-        user.status = 'in_game'
-        await self.send_event(user, USER_RCODES['host_accepted'])
+        user.set_status_in_game()
+        await self.send_user_code(user, USER_RCODES['host_accepted'])
 
     async def host_rejected(self, user: UserInstance):  # 유저 인스턴스 상태 hello 로 변경, approach 거절 코드 전송.
-        user.status = 'hello'
-        await self.send_event(user, USER_RCODES['host_rejected'])
+        user.set_status_hello()
+        await self.send_user_code(user, USER_RCODES['host_rejected'])
+
+    async def match_complete(self, user: UserInstance, code: str):
+        user.set_status_hello()  # 유저 상태 초기화
+        await self.send_user_code(user, code)
 
     # approacher 리스트 전송
     async def send_approachers(self, user: UserInstance):
@@ -113,12 +119,12 @@ class ServerMsgExecutor:
         await user.ws.send_json(to_send)
 
     async def send_waiters(self, user: UserInstance):
-        waiters = self.rdm.waiting.keys()
+        waiters = await self.rdm.waiting_list_get()
         to_send = build_dict(data_type=USER_RCODES['waiter_list'], data=waiters)
         await user.ws.send_json(to_send)
 
     @staticmethod
-    async def send_event(user: UserInstance, event_code: str):
+    async def send_user_code(user: UserInstance, event_code: str):
         to_send = build_dict(event_code, None)
         await user.ws.send_json(to_send)
 
@@ -174,11 +180,15 @@ class UserMsgExecutor:
         self.rdm.msg_broker.publish(channel=user.opponent, message=SERVER_CODES['game_over'])
         go = await self.rdm.get_game_over(user.current_match_id)
         if len(go) == 2:
-            op = await self.rdm.get_opponent(user.current_match_id, user.player_id)
-            self.rdm.msg_broker.publish(user.player_id, SERVER_CODES['match_complete'])
-            self.rdm.msg_broker.publish(op, SERVER_CODES['match_complete'])
+            await self.match_complete(user)
 
-            # todo game over 처리
+    async def match_complete(self, user):  # 게임 종료, 승패 판별
+        winner = await self.rdm.get_game_winner(await self.rdm.match_id_get(user.player_id))
+        for player in [user.player_id, user.opponent]:
+            if player == winner:
+                self.rdm.msg_broker.publish(player, SERVER_CODES['winner'])
+            else:
+                self.rdm.msg_broker.publish(player, SERVER_CODES['loser'])
 
     # 대기열 등록
     async def waiting_list_add(self, user: UserInstance):
@@ -243,14 +253,14 @@ class UserMsgExecutor:
 
     async def host_reject(self, user: UserInstance, approacher_id):  # 대결 거절
         if await self.is_host_req_valid(user, approacher_id):
-            self.rdm.msg_broker.publish(channel=approacher_id, message='hr')  # 거절 신호 publish, sme 쪽에서 상대 상태 변경 필요
+            self.rdm.msg_broker.publish(channel=approacher_id, message=SERVER_CODES['host_rejected'])  # 거절 신호 publish, sme 쪽에서 상대 상태 변경 필요
             await self.rdm.approacher_del(approacher_id, user.player_id)
             self.rdm.msg_broker.publish(channel=user.player_id, message=SERVER_CODES['approacher_updated'])  # 갱신된 approacher 목록
 
     # 클라이언트의 게임 데이터를 레디스에 저장
     async def game_data_in(self, user: UserInstance, data: dict):
         if user.current_match_id is None:
-            user.current_match_id = await self.rdm.player_match_id_get(user.player_id)
+            user.current_match_id = await self.rdm.match_id_get(user.player_id)
         if user.opponent is None:
             user.opponent = await self.rdm.get_opponent(user.current_match_id, user.player_id)
         await self.rdm.game_session_data_set(user.current_match_id, user.player_id, data)
