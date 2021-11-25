@@ -24,59 +24,33 @@ class DisplayDrawer:
 
     # self.game_instance.status 확인하여 디스플레이 업데이트
     def update_display(self):
-        if self.game_instance.status == 'in_game':
+        if self.game_instance.status == 'in_game' or self.game_instance.status == 'game_over':
             self.draw_in_game_screen()
-        elif self.game_instance.status == 'game_over':
-            self.draw_game_over()
         elif self.game_instance.status == 'pause':
             self.draw_pause()
         elif self.game_instance.status == 'start_screen':
             self.draw_start_screen()
         elif self.game_instance.status == 'mp_game_ready':
-            self.draw_ready()
+            self.draw_message(STRINGS.mp_start_soon)
         elif self.game_instance.status == 'mp_hello':
-            self.draw_hello()
+            self.draw_message(STRINGS.mp_hello)
         elif self.game_instance.status == 'mp_waiting':
-            self.draw_waiting()
+            self.draw_message(STRINGS.mp_waiting)
         elif self.game_instance.status == 'mp_approaching':
-            self.draw_approaching()
-        elif self.game_instance.status == 'mp_game_over':
-            self.draw_mp_game_over()
+            self.draw_message(STRINGS.mp_approaching)
+        elif self.game_instance.status == 'mp_win':
+            self.draw_message(STRINGS.mp_win)
+        elif self.game_instance.status == 'mp_lose':
+            self.draw_message(STRINGS.mp_lose)
 
         pygame.display.update()
 
-    def draw_ready(self):
+    def draw_message(self, message):
         self.screen.fill(UI_CONSTS.grey_3)
-        message = FONTS.h4.render(STRINGS.start_soon, True, UI_CONSTS.white)
+        message = FONTS.h2_b.render(message, True, UI_CONSTS.white)
         self.screen.blit(message, (0, 120))
 
-    def draw_hello(self):
-        self.screen.fill(UI_CONSTS.grey_3)
-        message = FONTS.h2_b.render(STRINGS.mp_hello, True, UI_CONSTS.white)
-        self.screen.blit(message, (0, 120))
-
-    def draw_waiting(self):
-        self.screen.fill(UI_CONSTS.grey_3)
-        message = FONTS.h2_b.render(STRINGS.mp_waiting, True, UI_CONSTS.white)
-        self.screen.blit(message, (0, 120))
-
-    def draw_approaching(self):
-        self.screen.fill(UI_CONSTS.grey_3)
-        message = FONTS.h2_b.render(STRINGS.mp_approaching, True, UI_CONSTS.white)
-        self.screen.blit(message, (0, 120))
-
-    def draw_mp_game_over(self):
-        over_text_1 = FONTS.h2_b.render(STRINGS.game, True, UI_CONSTS.white)
-        over_text_2 = FONTS.h2_b.render(STRINGS.over, True, UI_CONSTS.white)
-
-        self.draw_in_game_screen()
-        self.screen.blit(over_text_1, (58, 75))    # player 1 화면
-        self.screen.blit(over_text_2, (62, 105))
-        self.screen.blit(over_text_1, (118, 75))   # player 2 화면
-        self.screen.blit(over_text_2, (122, 105))
-
-    def draw_start_screen(self):  # TODO start screen 멀티플레이 선택, 웹 연결 등
-
+    def draw_start_screen(self):
         self.screen.fill(UI_CONSTS.white)
         pygame.draw.rect(
             self.screen,
