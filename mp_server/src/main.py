@@ -1,3 +1,4 @@
+import websockets.exceptions
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .redis_manager import RedisManager
 from .user_instance import UserInstance
@@ -85,7 +86,7 @@ async def user_message_receive(websocket, user: UserInstance):
             except json.decoder.JSONDecodeError:
                 print('not json type data')
 
-    except WebSocketDisconnect:  # 연결 종료시
+    except WebSocketDisconnect or websockets.exceptions.ConnectionClosedError:  # 연결 종료시
         await on_connection_lost(user)
 
 
