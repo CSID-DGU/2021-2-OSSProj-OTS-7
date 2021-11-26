@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { History } = require('../models');
-
+const secret_key = require(path.join(__dirname, '..', 'config', 'secretKey.json'));
 router.get('/userList', (req, res, next) => {
   History.findAll({
     attributes: ['id', 'name', 'win', 'loss', 'points'],
@@ -43,8 +43,8 @@ router.get('/byWins', (req, res, next) => {
     });
 });
 router.post('/winner', (req, res, next) => {
-  const { name } = req.body;
-  if (!name) {
+  const { name, key } = req.body;
+  if (!name || key != secret_key.SECRET_KEY) {
     console.error('no');
   } else {
     History.findOne({
@@ -72,8 +72,8 @@ router.post('/winner', (req, res, next) => {
 });
 
 router.post('/loser', (req, res, next) => {
-  const { name } = req.body;
-  if (!name) {
+  const { name, key } = req.body;
+  if (!name || key != secret_key.SECRET_KEY) {
     console.error('no');
   } else {
     History.findOne({
