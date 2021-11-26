@@ -122,7 +122,7 @@ class RedisManager:
 
         for key in session_info.keys():
             players.append(key)
-            scores.append(session_info['key']['score'])
+            scores.append(session_info[key]['score'])
         if scores[0] > scores[1]:
             return players[0]
         else:
@@ -137,10 +137,15 @@ class RedisManager:
         except redis.exceptions.ResponseError:
             print(f'game session data set failed. \n{player_id=}\n{match_id=}\n{data=}')
 
-    async def game_data_opponent_get(self, match_id, player_id) -> dict:  # 상대방 게임 정보만 return
-        raw = self.session.jsonget(match_id)
-        raw.pop(player_id)  # 자신 데이터만 뺌
-        return raw
+    async def game_data_opponent_get(self, match_id, player_id) -> (dict, None):  # 상대방 게임 정보만 return
+        try:
+            raw = self.session.jsonget(match_id)
+            raw.pop(player_id)  # 자신 데이터만 뺌
+            raw.pop('game_over')  # 게임 오버 오브젝트 제외
+            return raw
+        except redis.exceptions.DataError:
+            print('err')
+            return None
 
     async def game_session_clear(self, match_id: str):
         self.session.delete(match_id)

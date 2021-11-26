@@ -76,7 +76,7 @@ class OnlineLobby(OnlineLobbyView):
     class SigObj(QtCore.QObject):
         signal = QtCore.Signal(object)
 
-    def __init__(self, gui_com: GuiCom, player_id: str):
+    def __init__(self, gui_com: GuiCom, player_id: str, sig_obj: SigObj = None):
         super().__init__()
         self.player_id = player_id
 
@@ -86,62 +86,71 @@ class OnlineLobby(OnlineLobbyView):
         self.approacher_update()
 
         self.gui_emit = gui_com
+        self.status = 'hello'
 
         self.waiting = False
-        self.sig_obj = self.SigObj()
+        if sig_obj is None:
+            self.sig_obj = self.SigObj()
         self.signal = self.sig_obj.signal
         self.signal.connect(self.signal_parse)
+        self.set_view_hello()
+
+    def init(self):
+        self.status = ''
+        self.setHidden(False)
+        self.set_status_hello()
+
 
     def set_view_waiting(self):
         self.list_box_waiter.setDisabled(True)
         self.list_box_approacher.setDisabled(False)
-        self.game_start_btn.setText('Waiting...')
+        self.game_start_btn.setText('Waiting... Click to cancel')
 
     def set_view_hello(self):
         self.list_box_waiter.setDisabled(False)
         self.list_box_approacher.setDisabled(True)
-        self.game_start_btn.setText('Wait for approachers')
+        self.game_start_btn.setText('Click to wait for approachers')
 
     def set_status_waiting(self):
+        self.status = 'waiting'
         self.set_view_waiting()
-        self.waiting = True
         self.emit_to_handler(t='wa')
 
     def set_status_hello(self):
+        if self.status == 'approaching':
+            self.emit_to_handler(t='ac')
+        elif self.status == 'waiting':
+            self.emit_to_handler(t='wr')
+        self.status = 'hello'
         self.set_view_hello()
-        self.waiting = False
-        self.emit_to_handler(t='wr')
+
+    def set_view_approaching(self):
+        self.list_box_approacher.setDisabled(True)
+        self.list_box_waiter.setDisabled(True)
+        self.game_start_btn.setText('Approaching... Click to cancel')
+
+    def set_status_approaching(self):
+        self.status = 'approaching'
+        self.set_view_approaching()
 
     def game_start_btn_clicked(self):
-        if not self.waiting:
-            self.waiting = True
-            self.list_box_waiter.setDisabled(True)
-            self.list_box_approacher.setDisabled(False)
-            self.game_start_btn.setText('Waiting...')
-            self.emit_to_handler(t='wa')
-        elif self.waiting:
-            self.waiting = False
-            self.list_box_waiter.setDisabled(False)
-            self.list_box_approacher.setDisabled(True)
-            self.game_start_btn.setText("Wait for approachers")
-            self.emit_to_handler(t='wr')
+        if self.status == 'hello':
+            self.set_status_waiting()
+        elif self.status == 'waiting':
+            self.set_status_hello()
+        elif self.status == 'approaching':
+            self.set_status_hello()
 
     def approacher_list_item_clicked(self, item):
         self.list_item_msg_box_dialog(item, t='ha', alt_t='hr', msg='의 대결 제안 수락')
 
     def waiter_list_item_clicked(self, item):
-        self.list_item_msg_box_dialog(item, t='a', msg='에게 대결 제안')
-        self.waiter_approaching_dialog()
+        if self.list_item_msg_box_dialog(item, t='a', msg='에게 대결 제안'):
+            self.set_status_approaching()
+        else:
+            self.set_status_hello()
 
-    def waiter_approaching_dialog(self):
-        self.approaching_msg_box.show()
-        self.approaching_msg_box.setText('대결 제안중...')
-        msg_box_return = self.approaching_msg_box.exec()
-        if msg_box_return == QMessageBox.Cancel:
-            self.emit_to_handler(t='ac')
-            self.approaching_msg_box.close()
-
-    def list_item_msg_box_dialog(self, item, t: str, msg: str, alt_t: str = None):
+    def list_item_msg_box_dialog(self, item, t: str, msg: str, alt_t: str = None) -> bool:
         # t - 코드, msg- 표시될 텍스트, alt_t - 취소시 실행할 코드
         self.list_item_msg_box.show()
         user_id = item.text()
@@ -151,11 +160,13 @@ class OnlineLobby(OnlineLobbyView):
         if msg_box_return == QMessageBox.Ok:
             print(user_id + msg)
             self.emit_to_handler(t=t, d=user_id)
+            return True
         else:
             if alt_t is not None:
                 self.emit_to_handler(t=alt_t, d=user_id)
             self.list_item_msg_box.close()
-        
+            return False
+
     def list_box_add(self, listbox: QtWidgets.QListWidget, ref: list):
         for itm in ref:
             if itm != self.player_id:
@@ -182,11 +193,13 @@ class OnlineLobby(OnlineLobbyView):
 
     def signal_parse(self, sig: dict):
         if sig['t'] == 'server_connection_lost':
-            self.on_server_connection_lost()
-        elif sig['t'] == 'already_approaching':
-            self.on_already_approaching(sig['d'])
+            self.on_server_connection_lost()  # 서버 연결 끊김
         elif sig['t'] == 'approach_rejected':
-            self.on_approach_rejected()
+            self.on_approach_rejected()  # 제안 거절됨
+        elif sig['t'] == 'game_start':
+            self.on_match_start()  # 게임 시작
+        elif sig['t'] == 'init':
+            self.init()  # 초기화
 
     def on_server_connection_lost(self):
         msg_box = QtWidgets.QMessageBox()
@@ -197,9 +210,10 @@ class OnlineLobby(OnlineLobbyView):
         if res == 0:  # msg_box 버튼 눌렀을 때
             os.kill(os.getpid(), signal.SIGTERM)  # POSIX 신호인데 윈도우에서 일단 동작을 함.
 
-    def on_already_approaching(self, d: str):  # 대기 취소 후 재시도
-        self.emit_to_handler(t='ac')
-        self.emit_to_handler(t='a', d=d)
-
     def on_approach_rejected(self):
-        self.approaching_msg_box.close()
+        self.set_status_hello()
+
+    def on_match_start(self):
+        self.setHidden(True)
+
+
