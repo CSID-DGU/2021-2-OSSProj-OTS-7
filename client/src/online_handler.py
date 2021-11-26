@@ -141,6 +141,9 @@ class OnlineHandler:
     def game_start(self):
         self.status = 'in_game'
         self.reset_instances()
+
+        self.online_lobby_gui.signal.emit('game_start')
+
         self.game_instance.status = 'mp_game_ready'
         time.sleep(3)
         self.s_game_data_thread_restart()
@@ -311,6 +314,7 @@ class OnlineHandler:
                 time.sleep(0.1)  # 0.1초마다
             if self.game_instance.status == 'game_over':  # 게임 오버시 종료
                 self.build_and_send_json_req(t=SCODES['game_over'], d=None)
+                self.online_lobby_gui.signal.emit('show_lobby')
                 break
 
     def s_game_data_thread_init(self):  # 게임 데이터 전송 스레드 초기화

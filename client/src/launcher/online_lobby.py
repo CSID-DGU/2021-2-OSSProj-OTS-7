@@ -187,6 +187,10 @@ class OnlineLobby(OnlineLobbyView):
             self.on_already_approaching(sig['d'])
         elif sig['t'] == 'approach_rejected':
             self.on_approach_rejected()
+        elif sig['t'] == 'game_start':
+            self.on_match_start()
+        elif sig['t'] == 'show_lobby':
+            self.show()
 
     def on_server_connection_lost(self):
         msg_box = QtWidgets.QMessageBox()
@@ -203,3 +207,7 @@ class OnlineLobby(OnlineLobbyView):
 
     def on_approach_rejected(self):
         self.approaching_msg_box.close()
+
+    def on_match_start(self):
+        self.approaching_msg_box.close()
+        self.hide()
