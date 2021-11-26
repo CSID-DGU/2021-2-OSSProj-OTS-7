@@ -88,13 +88,9 @@ class OnlineHandler:
         elif todo == SCODES['host_reject']:
             self.s_host_reject(data)
         elif todo == SCODES['approach']:
-            if not self.status == 'approaching':
+            if self.status != 'approaching':
                 self.s_approach(data)
                 self.status = 'approaching'
-            elif self.status != 'approaching':
-                sig = self.build_dict(t='already_approaching')
-                self.online_lobby_gui.signal.emit(sig)
-
         elif todo == SCODES['approach_cancel']:
             self.s_approach_cancel()
             self.status = 'hello'
@@ -111,7 +107,6 @@ class OnlineHandler:
         ws.send(self.user_id)
 
     def on_message(self, ws, message):
-        # print(message)
         try:
             raw_data = json.loads(message)  # 최상위 키가 둘 존재하는 딕셔너리 데이터
             print(raw_data)  # 디버그
@@ -141,6 +136,9 @@ class OnlineHandler:
     def game_start(self):
         self.status = 'in_game'
         self.reset_instances()
+
+        self.online_lobby_gui.signal.emit(self.build_dict('game_start'))
+
         self.game_instance.status = 'mp_game_ready'
         time.sleep(3)
         self.s_game_data_thread_restart()
@@ -159,27 +157,20 @@ class OnlineHandler:
 
         print(self.status)
 
-        if self.status == 'in_game':
-            self.r_parse_in_game(t, d)
-        elif self.status == 'waiting':
-            self.r_parse_waiting(t, d)
-        elif self.status == 'approaching':
-            self.r_parse_approaching(t, d)
-        elif self.status == 'hello':
-            self.r_parse_hello(t, d)
-
-    # in_game 상황일때
-    def r_parse_in_game(self, t, d):
-        if t == RCODES['game_data']:  # 게임 데이터일때
+        if t == RCODES['game_data']:
             self.r_update_opponent_info(d)
-        elif t == RCODES['lose']:  # 패배
-            self.r_on_lose()  # 패배 화면
-        elif t == RCODES['win']:  # 승리
-            self.r_on_win()  # 패배 화면
-        elif t == RCODES['game_over']:  # 상대 게임 오버
-            self.r_on_op_game_over()  # 상대 화면에 게임 오버 띄우기
-        elif t == RCODES['match_complete']:  # 매치 끝남
-            self.r_on_match_complete()
+        elif t == RCODES['game_over']:
+            self.r_on_op_game_over()
+        elif t == RCODES['game_start']:
+            self.game_start()
+        elif t == RCODES['match_complete'] or t == RCODES['win'] or t == RCODES['lose']:
+            self.r_on_match_complete(t)
+        elif t == RCODES['host_rejected']:
+            self.r_host_rejected()
+        elif t == RCODES['approacher_list']:
+            self.r_update_current_approacher(d)
+        elif t == RCODES['waiter_list']:
+            self.r_update_current_waiter_list(d)
 
     def r_update_opponent_info(self, d: dict):
         if d:
@@ -205,50 +196,38 @@ class OnlineHandler:
     def r_on_win(self):
         self.game_instance.status = 'mp_win'
 
+    def r_on_nothing(self):
+        self.game_instance.status = 'mp_hello'
+
     def r_on_op_game_over(self):
         self.opponent_instance.status = 'game_over'
 
-    def r_on_match_complete(self):
-        self.game_instance.status = 'mp_hello'  # todo 게임 인스턴스 상태 상수화
-        self.online_lobby_gui.setVisible(True)  # 게임 오버시 gui 다시 보이게
+    def r_on_match_complete(self, t):
+        if t == RCODES['win']:
+            self.r_on_win()
+        elif t == RCODES['lose']:
+            self.r_on_lose()
+        elif t == RCODES['match_complete']:
+            self.r_on_nothing()  # 승부 없이 끝났을 때
 
-    def r_parse_waiting(self, t, d):
-        print(t, d)
-        if t == RCODES['approacher_list']:  # 어프로처 리스트
-            self.r_update_current_approacher(d)
-        elif t == RCODES['waiter_list']:
-            self.r_update_current_waiter_list(d)
-        elif t == RCODES['game_start']:
-            print('game_start!')
-            self.game_start()
+        self.status = 'hello'  # todo 상태 상수화
+        self.online_lobby_gui.signal.emit('init')  # 게임 끝나면 gui 초기화
 
     def r_update_current_approacher(self, d):
         self.current_approacher_list = d
         self.online_lobby_gui.approacher_list = d  # approacher_list 데이터 수정
         self.online_lobby_gui.approacher_update()  # gui refresh
 
-    def r_parse_approaching(self, t, d):
-        if t == RCODES['host_accepted'] or t == RCODES['game_start']:  # 대결 제안 수락됨
-            self.game_start()
-        elif t == RCODES['host_rejected']:  # 대결 제안 거절됨
-            self.r_host_rejected()
+    def r_update_current_waiter_list(self, d):
+        self.current_waiter_list = d
+        self.online_lobby_gui.waiter_list = d  # waiter_list 데이터 수정
+        self.online_lobby_gui.waiter_update()  # gui refresh
 
     def r_host_rejected(self):
         self.status = 'hello'
-        self.online_lobby_gui.signal.emit('approach_rejected')
-        # self.online_lobby_gui.approaching_msg_box.close()
-
-    def r_parse_hello(self, t, d):
-        if t == RCODES['waiter_list']:
-            self.r_update_current_waiter_list(d)
-
-    def r_update_current_waiter_list(self, d):
-        self.current_waiter_list = d
-        self.online_lobby_gui.waiter_list = d
-        self.online_lobby_gui.waiter_update()  # gui refresh
+        self.online_lobby_gui.signal.emit(self.build_dict('approach_rejected'))  # todo signal 상수화
 
     # 이하 전송
-
     def send_json_req(self, req):
         self.ws.send(json.dumps(req))
 
@@ -286,7 +265,7 @@ class OnlineHandler:
     def s_host_reject(self, approacher_id: str):
         self.build_and_send_json_req(SCODES['host_reject'], approacher_id)
 
-    async def s_game_data(self):
+    def s_game_data(self):
         d = {
             'id': self.user_id,
             'score': self.game_instance.score,
@@ -307,10 +286,11 @@ class OnlineHandler:
     def s_game_data_loop(self):  # 스레드로 사용할것
         while True:
             if self.game_instance.status == 'in_game':
-                asyncio.run(self.s_game_data())
+                self.s_game_data()  # 비동기 처리가 필요할수도
                 time.sleep(0.1)  # 0.1초마다
-            if self.game_instance.status == 'game_over':
+            if self.game_instance.status == 'game_over':  # 게임 오버시 종료
                 self.build_and_send_json_req(t=SCODES['game_over'], d=None)
+                self.online_lobby_gui.signal.emit(self.build_dict('init'))
                 break
 
     def s_game_data_thread_init(self):  # 게임 데이터 전송 스레드 초기화
