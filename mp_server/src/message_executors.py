@@ -194,7 +194,7 @@ class UserMsgExecutor:
     async def waiting_list_add(self, user: UserInstance):
         if user.status == 'hello':
             await self.rdm.waiting_list_add(user.player_id)
-            self.rdm.msg_broker.publish('waiting', '')
+            self.rdm.msg_broker.publish('$waiting', '')
             user.status = 'waiting'
         else:
             print(f'{user.player_id} is not in hello state. {user.status=}')
@@ -203,7 +203,7 @@ class UserMsgExecutor:
     async def waiting_list_remove(self, user: UserInstance):
         if user.status == 'waiting':
             await self.rdm.waiting_list_remove_and_notice(user.player_id)
-            self.rdm.msg_broker.publish('waiting', '')
+            self.rdm.msg_broker.publish('$waiting', '')
             user.status = 'hello'
         else:
             print(f'{user.player_id} is not in waiting state. {user.status=}')

@@ -141,7 +141,7 @@ class RedisManager:
 
     async def user_connection_closed(self, player_id):
         p_match_id = await self.match_id_get(player_id)  # 매치 아이디
-        if await p_match_id is not None:  # 현재 게임중인지 확인
+        if p_match_id is not None:  # 현재 게임중인지 확인
             op_id = await self.get_opponent(p_match_id, player_id)  # 상대 id 확인
             self.msg_broker.publish(channel=op_id, message='go')  # 게임중인 상대에게 게임 오버 신호 보내기 todo 상수 참조
             await self.player_match_id_clear(player_id)  # 플레이어에게 할당된 매치 아이디 제거
