@@ -1,7 +1,7 @@
 from .redis_manager import RedisManager
 from .user_instance import UserInstance
 from .consts import WAITING_CHANNEL
-
+from . import api_requests
 SERVER_CODES = {
     'game_data': 'gd',
     'game_over': 'go',
@@ -189,12 +189,17 @@ class UserMsgExecutor:
     async def check_match_complete(self, user: UserInstance):
         winner = await self.rdm.get_game_winner(user.current_match_id)
         if winner is not None:
-            for player in [user.player_id, user.opponent]:
-                if player == winner:
-                    self.rdm.msg_broker.publish(player, SERVER_CODES['winner'])
-                else:
-                    self.rdm.msg_broker.publish(player, SERVER_CODES['loser'])
-            await self.rdm.game_session_clear(user.current_match_id)   # 정보 전송 후 레디스에 저장된 세션 정보 삭제
+            await self.publish_result(winner, user)
+
+    async def publish_result(self, winner: str, user: UserInstance):
+        for player in [user.player_id, user.opponent]:
+            if player == winner:
+                self.rdm.msg_broker.publish(player, SERVER_CODES['winner'])
+                await api_requests.db_post_winner(player)
+            else:
+                self.rdm.msg_broker.publish(player, SERVER_CODES['loser'])
+                await api_requests.db_post_loser(player)
+        await self.rdm.game_session_clear(user.current_match_id)  # 정보 전송 후 레디스에 저장된 세션 정보 삭제
 
     # 대기열 등록
     async def waiting_list_add(self, user: UserInstance):

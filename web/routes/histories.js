@@ -53,7 +53,7 @@ router.post('/winner', (req, res, next) => {
       .then((user) => {
         const points_ = user.points;
         const win_ = user.win;
-        const loss = user.loss;
+        const loss_ = user.loss;
         History.update(
           { points: points_ + 3, win: win_ + 1, loss: loss_ },
           { where: { name: name } },
