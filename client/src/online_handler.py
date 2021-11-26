@@ -286,7 +286,7 @@ class OnlineHandler:
     def s_host_reject(self, approacher_id: str):
         self.build_and_send_json_req(SCODES['host_reject'], approacher_id)
 
-    async def s_game_data(self):
+    def s_game_data(self):
         d = {
             'id': self.user_id,
             'score': self.game_instance.score,
@@ -307,9 +307,9 @@ class OnlineHandler:
     def s_game_data_loop(self):  # 스레드로 사용할것
         while True:
             if self.game_instance.status == 'in_game':
-                asyncio.run(self.s_game_data())
+                self.s_game_data()  # 비동기 처리가 필요할수도
                 time.sleep(0.1)  # 0.1초마다
-            if self.game_instance.status == 'game_over':
+            if self.game_instance.status == 'game_over':  # 게임 오버시 종료
                 self.build_and_send_json_req(t=SCODES['game_over'], d=None)
                 break
 
