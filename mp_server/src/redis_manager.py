@@ -122,7 +122,7 @@ class RedisManager:
 
         for key in session_info.keys():
             players.append(key)
-            scores.append(session_info['key']['score'])
+            scores.append(session_info[key]['score'])
         if scores[0] > scores[1]:
             return players[0]
         else:
