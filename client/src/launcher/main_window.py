@@ -2,7 +2,7 @@ import sys
 import webbrowser
 
 from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, QMessageBox
 
 from .login_window import LoginWindow
 from ..consts.asset_paths import Path
@@ -14,7 +14,7 @@ class LauncherView(QWidget):
     def __init__(self):
         self.app = QApplication(sys.argv)
         super().__init__()
-        self.setGeometry(300, 300, 400, 300)
+        self.setMinimumSize(500, 0)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
         self.setWindowTitle('OTS')
@@ -67,7 +67,14 @@ class Launcher(LauncherView):
         run_game.run_single()
 
     def on_dual_btn_clicked(self):
-        self.close()
+        mb = QMessageBox()
+        mb.setText('개발중입니다.')
+        mb.setWindowTitle('WIP')
+        mb.setStandardButtons(QMessageBox.Ok)
+        res = mb.exec_()
+        if res:
+            mb.close()
+        # self.close()
 
     def on_online_btn_clicked(self):
         self.close()

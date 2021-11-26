@@ -1,4 +1,4 @@
-from . import config
+from . import config, consts
 import redis.exceptions
 from rejson import Client, Path
 
@@ -35,7 +35,7 @@ class RedisManager:
 
     # 레디스 메시지 채널 구독
     def initial_subscribe(self):
-        to_subscribe = ['$waiting']  # test
+        to_subscribe = [consts.WAITING_CHANNEL]  # test
         self.msg_pubsub.subscribe(to_subscribe)
 
     async def waiting_list_get(self) -> list:
@@ -69,9 +69,9 @@ class RedisManager:
             approachers: list = self.waiting.jsonobjkeys(name=waiter_id, path='.approachers')
             if approachers:
                 for approacher in approachers:
-                    self.msg_broker.publish(channel=approacher, message='hr')
-        except redis.exceptions.ResponseError:
-            print('redis response error! approacher_clear_and_notice()')
+                    self.msg_broker.publish(channel=approacher, message='hr')  # todo 상수
+        except redis.exceptions.ResponseError or redis.exceptions.DataError:
+            print(f'redis response|data error! approacher_clear_and_notice({waiter_id=})')
         finally:
             self.waiting.jsondel(name=waiter_id)
 
@@ -79,7 +79,11 @@ class RedisManager:
         self.match_ids.set(approacher_id, host_id)
         self.match_ids.set(host_id, host_id)
 
-    async def match_id_get(self, player_id: str):  # 플레이어의 매치 id 반환
+    async def match_id_del(self, players: list):
+        for player in players:
+            self.match_ids.delete(player)
+
+    async def match_id_get(self, player_id: str) -> str:  # 플레이어의 매치 id 반환
         return self.match_ids.get(player_id)
 
     async def player_match_id_clear(self, player_id: str):  # 플레이어에게 할당된 매치 id 제거
@@ -89,25 +93,28 @@ class RedisManager:
         data = {
             player1: {},
             player2: {},
-            'game_over': []
+            'game_over': {}
         }
         self.session.jsonset(match_id, Path.rootPath(), data)
 
-    async def get_opponent(self, match_id: str, player_id: str):
+    async def get_opponent(self, match_id: str, player_id: str) -> str:
         session_keys: list = self.session.jsonobjkeys(match_id, Path.rootPath())
         session_keys.remove(player_id)
         session_keys.remove('game_over')
         opponent = session_keys[0]
         return opponent
 
-    async def get_game_over(self, match_id):
-        return self.session.jsonget(match_id, '.game_over')
+    async def get_game_over(self, match_id) -> list:  # 게임 오버된 유저 리스트 반환
+        return self.session.jsonobjkeys(match_id, '.game_over')
 
     async def game_over_user(self, player_id: str):
         match_id = await self.match_id_get(player_id)
-        self.session.jsonarrappend(match_id, '.game_over', player_id)
+        self.session.jsonset(match_id, f'.game_over.{player_id}', 1)  # match_id.game_over.player_id = 1
 
-    async def get_game_winner(self, match_id):
+    async def get_game_winner(self, match_id) -> (None, str):
+        if len(await self.get_game_over(match_id)) < 2:  # 게임 오버된 플레이어 리스트 크기가 2 미만일 경우. 2인 플레이 기준.
+            return None  # 게임이 아직 안 끝남.
+
         session_info: dict = self.session.jsonget(match_id)
         session_info.pop('game_over')
         players = []
@@ -116,7 +123,6 @@ class RedisManager:
         for key in session_info.keys():
             players.append(key)
             scores.append(session_info['key']['score'])
-
         if scores[0] > scores[1]:
             return players[0]
         else:
@@ -137,11 +143,11 @@ class RedisManager:
         return raw
 
     async def game_session_clear(self, match_id: str):
-        self.session.delete(str(match_id))
+        self.session.delete(match_id)
 
     async def user_connection_closed(self, player_id):
         p_match_id = await self.match_id_get(player_id)  # 매치 아이디
-        if await p_match_id is not None:  # 현재 게임중인지 확인
+        if p_match_id is not None:  # 현재 게임중인지 확인
             op_id = await self.get_opponent(p_match_id, player_id)  # 상대 id 확인
             self.msg_broker.publish(channel=op_id, message='go')  # 게임중인 상대에게 게임 오버 신호 보내기 todo 상수 참조
             await self.player_match_id_clear(player_id)  # 플레이어에게 할당된 매치 아이디 제거

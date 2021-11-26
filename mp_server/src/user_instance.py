@@ -22,3 +22,9 @@ class UserInstance:
 
     def set_status_waiting(self):
         self.status = 'waiting'
+
+    def init_user(self):
+        self.set_status_hello()
+        self.approached_to = None
+        self.opponent = None
+        self.current_match_id = None

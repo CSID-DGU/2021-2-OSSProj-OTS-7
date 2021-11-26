@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .redis_manager import RedisManager
 from .user_instance import UserInstance
 from .message_executors import UserMsgExecutor, ServerMsgExecutor
+from .consts import WAITING_CHANNEL
 from queue import Queue
 import threading
 import asyncio
@@ -47,14 +48,14 @@ def server_message_process(loop):
 async def server_message_exec(msg):
     msg_type = msg.get('type')
     channel: str = msg.get('channel')  # user_id 가 채널
-    if channel != '$waiting':
+    if channel != WAITING_CHANNEL:
         try:
             user: UserInstance = players_dict[channel]  # user_id 에 매핑된 플레이어 커넥션 객체
             if msg_type == 'message':
                 await sme.server_msg_exec(user, msg)
         except KeyError:
             print('player connection object does not exist')
-    elif channel == '$waiting':
+    else:
         for user in players_dict.values():
             await sme.send_waiters(user)
 
@@ -71,7 +72,7 @@ async def user_instance_create(websocket: WebSocket) -> UserInstance:
     rd_manager.msg_pubsub.subscribe(player_id)  # redis player_id 채널 구독
     user_instance = UserInstance(player_id=player_id, websocket=websocket)
     players_dict[player_id] = user_instance
-    rd_manager.msg_broker.publish('$waiting', '')
+    rd_manager.msg_broker.publish(WAITING_CHANNEL, '')  # 대기자 목록 업데이트
     return user_instance
 
 
@@ -86,14 +87,12 @@ async def user_message_receive(websocket, user: UserInstance):
 
     except WebSocketDisconnect:  # 연결 종료시
         await on_connection_lost(user)
-        # 연결 끊겼을 때 필요한 조치
-        # Todo 상대 클라이언트에 연결 끊김 알림
 
 
 async def on_connection_lost(user: UserInstance):
     print(f'player {user.player_id} disconnected')
-    rd_manager.msg_pubsub.unsubscribe(user.player_id)
-    players_dict.pop(user.player_id)
+    rd_manager.msg_pubsub.unsubscribe(user.player_id)  # 플레이어 채널 구독 해제
+    players_dict.pop(user.player_id)  # 딕셔너리에서 유저 객체 제거. 유저 객체는 이 메소드 종료시 GC가 알아서 제거할것이라 생각됨.
     await rd_manager.user_connection_closed(user.player_id)
     if user.approached_to is not None:
         await rd_manager.approacher_del(user.player_id, user.approached_to)
