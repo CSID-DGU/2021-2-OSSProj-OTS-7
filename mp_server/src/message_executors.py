@@ -86,6 +86,10 @@ class ServerMsgExecutor:
     # 이하 서버 명령으로 실행되는 메소드
     async def game_data_out(self, user: UserInstance):
         op_game_data: dict = await self.rdm.game_data_opponent_get(user.current_match_id, user.player_id)
+
+        if op_game_data is None:  # 매치 시작 직후이거나 네트워크 문제가 있는 등의 상황에서 None 반환 가능
+            return
+
         for val in op_game_data.values():  # 키를 빼고 오브젝트만 전송.
             to_send = build_dict(SERVER_CODES['game_data'], val)
             print(to_send)  # 디버그용
