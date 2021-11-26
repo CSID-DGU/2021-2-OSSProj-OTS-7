@@ -52,7 +52,7 @@ class GameInstance:
         # self.current_time = None  # 디버그용
 
     def reset(self):
-        self.__init__()
+        self.__init__(self.is_multiplayer)
 
     # ############## 이하 상태 ##############
     def is_stackable(self) -> bool:  # 다음 블록을 쌓을 수 있는 상황인지 판별함. 게임 오버 판별기
