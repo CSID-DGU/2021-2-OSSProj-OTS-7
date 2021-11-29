@@ -16,3 +16,4 @@ typing_extensions==4.0.0
 uvicorn==0.15.0
 websockets==10.0
 wrapt==1.13.3
+requests==2.26.0
