@@ -98,6 +98,8 @@ class OnlineLobby(OnlineLobbyView):
     def init(self):
         self.status = ''
         self.setHidden(False)
+        self.list_box_clear(self.list_box_waiter)
+        self.list_box_clear(self.list_box_approacher)
         self.set_status_hello()
 
 
