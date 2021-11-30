@@ -142,7 +142,7 @@ class OnlineHandler:
         self.game_instance.status = 'mp_game_ready'
         time.sleep(3)
         self.s_game_data_thread_restart()
-        self.game_instance.status = 'in_game'
+        self.game_instance.ev_game_start()
 
     # 이하 수신
     # 데이터 parse

@@ -187,7 +187,7 @@ class UserMsgExecutor:
         user.status = 'game_over'
         await self.rdm.game_over_user(user.player_id)
         self.rdm.msg_broker.publish(channel=user.opponent, message=SERVER_CODES['game_over'])
-        await self.check_match_complete(user)
+        await self.check_match_complete(user)  # 매치 종료 체크
 
     # 매치 종료 체크, 나중에 게임 오버된 쪽 프로세스가 승패 판별
     async def check_match_complete(self, user: UserInstance):
@@ -234,9 +234,9 @@ class UserMsgExecutor:
             if set_ok:
                 user.status = 'approaching'
                 user.approached_to = waiter_id
-                self.rdm.msg_broker.publish(waiter_id, 'au')  # waiter 에게 approacher 업데이트 사항을 알림
+                self.rdm.msg_broker.publish(waiter_id, SERVER_CODES['approacher_updated'])  # waiter 에게 approacher 업데이트 사항을 알림
             else:
-                self.rdm.msg_broker.publish(user.player_id, 'ar')  # 일단은 요청 거절 메시지 전송. todo 정리 필요
+                self.rdm.msg_broker.publish(user.player_id, SERVER_CODES['host_rejected'])  # 일단은 요청 거절 메시지 전송.
                 print(f'{user.player_id} tried to approach, but failed. The waiter does not exist')  # todo 클라이언트 요청에 대한 에러 전송
         else:
             print(f'{user.player_id} tried to approach, but failed. \nstatus={user.status} \ntarget={waiter_id}')

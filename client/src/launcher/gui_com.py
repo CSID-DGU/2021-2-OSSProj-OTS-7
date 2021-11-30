@@ -1,6 +1,8 @@
 from queue import Queue
 
 
+# PySide2로 구현한 런처가 온라인 핸들러와 통신하기 위한 클래스
+# 온라인 핸들러는 이 클래스를 이용해서 수신하고, PySide2로 구현한 런처는 시그널을 이용해서 수신함.
 class GuiCom:
     def __init__(self):
         self.handler_queue = Queue()
