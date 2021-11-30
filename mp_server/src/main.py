@@ -93,7 +93,8 @@ async def user_message_receive(websocket, user: UserInstance):
 async def on_connection_lost(user: UserInstance):
     print(f'player {user.player_id} disconnected')
     rd_manager.msg_pubsub.unsubscribe(user.player_id)  # 플레이어 채널 구독 해제
-    players_dict.pop(user.player_id)  # 딕셔너리에서 유저 객체 제거. 유저 객체는 이 메소드 종료시 GC가 알아서 제거할것이라 생각됨.
     await rd_manager.user_connection_closed(user.player_id)
     if user.approached_to is not None:
         await rd_manager.approacher_del(user.player_id, user.approached_to)
+    players_dict.pop(user.player_id)  # 딕셔너리에서 유저 객체 제거. 유저 객체는 이 메소드 종료시 GC가 알아서 제거할것이라 생각됨.
+    rd_manager.msg_broker.publish(channel=WAITING_CHANNEL, message='')  # 클라이언트 대기열 갱신
