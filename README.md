@@ -23,8 +23,8 @@
 - 모듈 분리 등, 객체지향적 설계
 - **pygame**의 커스텀 이벤트를 이용하는 event-driven 설계 도입(WIP)
 - **QT 5** 기반 GUI 런처, 온라인 로비
-- 구동에 필요한 의존성을 포함하여 바이너리 빌드, 배포(예정)
-- 스테이지별 아이템 등, 게임  추가, 개선 요소
+- 실행에 필요한 파이썬 환경과 의존성을 포함하여 바이너리 빌드, 배포(예정)
+- 스테이지별 아이템 등, 추가, 개선 요소
 
 # MultiPlayer Server
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://www.olis.or.kr/license/Detailselect.do?lId=1006)
@@ -32,10 +32,10 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.70.0-important)
 ![rejson](https://img.shields.io/badge/rejson-0.5.6-important)
 
-**FastAPI**와 **Redis**를 기반으로 하는 온라인 중계 서버입니다. **Uvicorn**(Gunicorn), **Redis(with RedisJSON module)** 환경에서 구동됩니다.
+[**FastAPI**](https://fastapi.tiangolo.com/)와 [**Redis**](https://redis.io/)를 기반으로 하는 온라인 중계 서버입니다. [**Uvicorn**](https://www.uvicorn.org/), **Redis(with [RedisJSON](https://oss.redis.com/redisjson/))** 환경에서 구동됩니다.
 - 웹소켓 기반 클라이언트 연결
 - Redis의 Message Broker 기능을 이용한 Worker-Process 간의 통신
 - 비동기 IO 처리
-- 유연한 스케일링
+- 유연한 Scale-Out
 - JWT 기반 사용자 인증(WIP)
 
