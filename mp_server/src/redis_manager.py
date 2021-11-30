@@ -3,19 +3,10 @@ import redis.exceptions
 from rejson import Client, Path
 
 
-def get_waiting_obj(waiting_player_id: str):  # redis 에 등록할 waiting json
+def build_waiting_obj(waiting_player_id: str):  # redis 에 등록할 waiting json
     to_return = {
         'waiter': waiting_player_id,
         'approachers': {},
-    }
-    return to_return
-
-
-def get_session_obj(player1: str, player2: str):  # redis 에 등록할 session json
-    to_return = {
-        player1: {},
-        player2: {},
-        'status': 'ready',
     }
     return to_return
 
@@ -42,7 +33,7 @@ class RedisManager:
         return self.waiting.keys()
 
     async def waiting_list_add(self, player_id: str):
-        obj = get_waiting_obj(player_id)
+        obj = build_waiting_obj(player_id)
         self.waiting.jsonset(player_id, Path.rootPath(), obj)
 
     async def waiting_list_remove(self, player_id: str):
@@ -144,7 +135,8 @@ class RedisManager:
             raw.pop('game_over')  # 게임 오버 오브젝트 제외
             return raw
         except redis.exceptions.DataError:
-            print('err')
+            print('err', match_id, player_id)
+
             return None
 
     async def game_session_clear(self, match_id: str):
@@ -153,8 +145,7 @@ class RedisManager:
     async def user_connection_closed(self, player_id):
         p_match_id = await self.match_id_get(player_id)  # 매치 아이디
         if p_match_id is not None:  # 현재 게임중인지 확인
-            op_id = await self.get_opponent(p_match_id, player_id)  # 상대 id 확인
-            self.msg_broker.publish(channel=op_id, message='go')  # 게임중인 상대에게 게임 오버 신호 보내기 todo 상수 참조
+            await self.game_over_user(player_id)  # 유저 게임 오버 처리
             await self.player_match_id_clear(player_id)  # 플레이어에게 할당된 매치 아이디 제거
         await self.waiting_list_remove_and_notice(player_id)  # 대기중이었을 경우 approacher 들에게 알림.
 

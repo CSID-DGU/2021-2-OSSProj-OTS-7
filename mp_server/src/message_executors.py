@@ -1,46 +1,7 @@
 from .redis_manager import RedisManager
 from .user_instance import UserInstance
-from .consts import WAITING_CHANNEL
+from .consts import WAITING_CHANNEL, SERVER_CODES, USER_RCODES, USER_SCODES
 from . import api_requests
-SERVER_CODES = {
-    'game_data': 'gd',
-    'game_over': 'go',
-    'match_set': 'ms',
-    'game_start': 'gs',
-    'host_accepted': 'ha',
-    'host_rejected': 'hr',
-    'approacher_updated': 'au',
-    'match_complete': 'mc',
-    'loser': 'lo',
-    'winner': 'wi',
-    'waiter_list': 'wl'
-}
-
-USER_SCODES = {
-    'game_data': 'gd',
-    'game_over': 'go',
-    'waiting_list_add': 'wa',
-    'waiting_list_remove': 'wr',
-    'waiting_list_get': 'wg',
-    'approach': 'a',
-    'approach_cancel': 'ac',
-    'host_accept': 'ha',
-    'host_reject': 'hr',
-}
-
-USER_RCODES = {
-    'game_data': 'gd',
-    'game_over': 'go',
-    'match_set': 'ms',  # 현재는 사용할 필요 없음
-    'match_complete': 'mc',
-    'game_start': 'gs',
-    'waiter_list': 'wl',
-    'host_accepted': 'ha',
-    'host_rejected': 'hr',
-    'approacher_list': 'al',
-    'lose': 'lo',
-    'win': 'wi'
-}
 
 
 def build_dict(data_type, data):
@@ -184,7 +145,6 @@ class UserMsgExecutor:
 
     # user 게임 오버 신호 수신
     async def game_over(self, user: UserInstance):
-        user.status = 'game_over'
         await self.rdm.game_over_user(user.player_id)
         self.rdm.msg_broker.publish(channel=user.opponent, message=SERVER_CODES['game_over'])
         await self.check_match_complete(user)  # 매치 종료 체크
@@ -192,6 +152,9 @@ class UserMsgExecutor:
     # 매치 종료 체크, 나중에 게임 오버된 쪽 프로세스가 승패 판별
     async def check_match_complete(self, user: UserInstance):
         winner = await self.rdm.get_game_winner(user.current_match_id)
+        if winner is "$err":
+            await self.err_match_complete(user)
+
         if winner is not None:
             await self.publish_result(winner, user)
 
@@ -204,6 +167,11 @@ class UserMsgExecutor:
                 self.rdm.msg_broker.publish(player, SERVER_CODES['loser'])
                 await api_requests.db_post_loser(player)
         await self.rdm.game_session_clear(user.current_match_id)  # 정보 전송 후 레디스에 저장된 세션 정보 삭제
+
+    # 에러 발생시 매치 종료 신호
+    async def err_match_complete(self, user: UserInstance):
+        for player in [user.player_id, user.opponent]:
+            self.rdm.msg_broker.publish(player, SERVER_CODES['match_complete'])
 
     # 대기열 등록
     async def waiting_list_add(self, user: UserInstance):
