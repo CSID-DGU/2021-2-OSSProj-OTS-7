@@ -1,4 +1,3 @@
-import time
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QHBoxLayout, \
     QLabel
@@ -101,7 +100,6 @@ class OnlineLobby(OnlineLobbyView):
         self.list_box_clear(self.list_box_waiter)
         self.list_box_clear(self.list_box_approacher)
         self.set_status_hello()
-
 
     def set_view_waiting(self):
         self.list_box_waiter.setDisabled(True)
@@ -217,5 +215,3 @@ class OnlineLobby(OnlineLobbyView):
 
     def on_match_start(self):
         self.setHidden(True)
-
-
