@@ -18,6 +18,7 @@ class LoginWindowView(QWidget):
         self.layout.addWidget(self.input_name)
         self.input_pwd = QLineEdit()
         self.input_pwd.setPlaceholderText('비밀번호 입력')
+        self.input_pwd.setEchoMode(QLineEdit.Password)
         self.layout.addWidget(self.input_pwd)
 
         self.login_btn = QPushButton("Login")
