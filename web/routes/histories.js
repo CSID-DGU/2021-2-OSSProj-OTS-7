@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { History } = require('../models');
+const path = require('path');
 const secret_key = require(path.join(__dirname, '..', 'config', 'secretKey.json'));
 router.get('/userList', (req, res, next) => {
   History.findAll({
