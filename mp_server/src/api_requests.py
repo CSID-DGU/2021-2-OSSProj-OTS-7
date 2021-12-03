@@ -17,3 +17,8 @@ except ModuleNotFoundError:
     async def db_post_loser(user_id: str):
         print(f'module not found err \n loser {user_id=}')
         pass
+
+
+async def auth_jwt_validate(user_id: str, jwt: str) -> bool:
+    pass
+
