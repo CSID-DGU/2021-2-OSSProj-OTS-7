@@ -15,36 +15,36 @@ router.post('/login', async (req, res, next) => {
         res.json({ msg: 'failed' }); //회원정보 없음
         return;
       } else {
-        res.json({ msg: user }); // 회원정보 존재
-        return;
+        let accessToken = jwt.sign(
+          { name, type: user.userType, verified: user.verified },
+          process.env.JWT_SECRET_ACCESS,
+          { expiresIn: '30m' },
+        );
+        let refreshToken = jwt.sign(
+          { name, type: user.userType, verified: user.verified },
+          process.env.JWT_SECRET_REFRESH,
+          { expiresIn: '60m' },
+        );
+        req.cache.set(name, refreshToken);
+        req.expire(name, 60 * 10);
+        const info = [accessToken, name];
+        return info;
       }
-      let accessToken = jwt.sign(
-        { name, type: user.userType, verified: user.verified }, // jwt 생성 후 토큰 반환
-        process.env.JWT_SECRET_ACCESS,
-        { expiresIn: '30m' },
-      );
-
-      let refreshToken = jwt.sign(
-        { name, type: user.userType, verified: user.verified }, // jwt 생성 후 토큰 반환
-        process.env.JWT_SECRET_REFRESH,
-        { expiresIn: '60m' },
-      );
-
-      req.cache.set(name, refreshToken);
-      req.expire(name, 60 * 10);
-      return accessToken;
     })
-    .then((token) => {
+    .then((info) => {
       // save access_token in redis
-      const parsedKey = 'access_' + name;
+      const parsedKey = 'access_' + info[1];
+      const user = info[1];
       console.log('parsedKey: ', parsedKey);
-      return saveRedis(req, parsedKey, token, 60 * 5);
+      const result = [saveRedis(req, parsedKey, info[0], 60 * 5), info[1]];
     })
-    .then((token) => {
+    .then((result) => {
       // save token in cookie
-      console.log('result token: ', token);
-      res.cookie('accessToken', token, { secure: false, httpOnly: true, readOnly: true });
-      res.json({ msg: 'success' }); // 성공
+      console.log('result token: ', result[0]);
+      res.cookie('accessToken', result[0], { secure: false, httpOnly: true, readOnly: true });
+      //       result[0] = token,
+      //       result[1] = name
+      res.json({ msg: result }); // 성공
     })
     .catch((err) => {
       res.json({ msg: 'failed', err });
