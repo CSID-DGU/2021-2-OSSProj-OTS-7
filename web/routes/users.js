@@ -17,16 +17,16 @@ router.post('/login', async (req, res, next) => {
       } else {
         let accessToken = jwt.sign(
           { name, type: user.userType, verified: user.verified },
-          process.env.JWT_SECRET_ACCESS,
+          'secret',
           { expiresIn: '30m' },
         );
         let refreshToken = jwt.sign(
           { name, type: user.userType, verified: user.verified },
-          process.env.JWT_SECRET_REFRESH,
+          'secret',
           { expiresIn: '60m' },
         );
         req.cache.set(name, refreshToken);
-        req.expire(name, 60 * 10);
+        //         req.expire(name, 60 * 10);
         const info = [accessToken, name];
         return info;
       }
@@ -36,18 +36,12 @@ router.post('/login', async (req, res, next) => {
       const parsedKey = 'access_' + info[1];
       const user = info[1];
       console.log('parsedKey: ', parsedKey);
-      const result = [saveRedis(req, parsedKey, info[0], 60 * 5), info[1]];
-    })
-    .then((result) => {
-      // save token in cookie
-      console.log('result token: ', result[0]);
-      res.cookie('accessToken', result[0], { secure: false, httpOnly: true, readOnly: true });
-      //       result[0] = token,
-      //       result[1] = name
-      res.json({ msg: result }); // 성공
-    })
-    .catch((err) => {
-      res.json({ msg: 'failed', err });
+      saveRedis(req, parsedKey, info[0], 60 * 5).then((token) => {
+        console.log('token: ', token);
+        console.log('user: ', user);
+        const resarr = [user, token];
+        res.json({ msg: resarr });
+      });
     });
 });
 
