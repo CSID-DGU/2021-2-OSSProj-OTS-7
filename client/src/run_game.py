@@ -8,7 +8,8 @@ from .launcher.gui_com import GuiCom
 from .launcher.online_lobby import OnlineLobby
 
 
-def init_objs(player_id: (str, None), is_mp: bool) -> tuple:
+# 객체 생성, 조립
+def init_objs(player_id: (str, None), jwt: (str, None), is_mp: bool) -> tuple:
     if is_mp:
         game_instance = GameInstance(is_multiplayer=True)
         opponent_game_instance = GameInstance()
@@ -28,7 +29,8 @@ def init_objs(player_id: (str, None), is_mp: bool) -> tuple:
             game_instance=game_instance,
             opponent_instance=opponent_game_instance,
             online_data=gui_com,
-            online_lobby=online_lobby
+            online_lobby=online_lobby,
+            jwt=jwt
         )
     else:
         online_handler = None
@@ -37,12 +39,12 @@ def init_objs(player_id: (str, None), is_mp: bool) -> tuple:
 
 
 def run_single() -> None:
-    ots, oh, ol = init_objs(None, False)
+    ots, oh, ol = init_objs(None, None, False)
     ots.main_loop()
 
 
-def run_online(player_id) -> None:
-    ots, oh, ol = init_objs(player_id=player_id, is_mp=True)
+def run_online(player_id, jwt) -> None:
+    ots, oh, ol = init_objs(player_id=player_id, jwt=jwt, is_mp=True)
 
     ol.show()
     oh.ws_thread.start()

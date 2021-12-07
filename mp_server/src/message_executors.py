@@ -152,7 +152,7 @@ class UserMsgExecutor:
     # 매치 종료 체크, 나중에 게임 오버된 쪽 프로세스가 승패 판별
     async def check_match_complete(self, user: UserInstance):
         winner = await self.rdm.get_game_winner(user.current_match_id)
-        if winner is "$err":
+        if winner == "$err":
             await self.err_match_complete(user)
 
         if winner is not None:

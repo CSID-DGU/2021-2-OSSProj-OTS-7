@@ -1,7 +1,6 @@
 import websocket
 import time
 import threading
-import asyncio
 import json
 from .game_instance import GameInstance
 from .components.mino import Mino
@@ -51,18 +50,20 @@ class OnlineHandler:
                  game_instance: GameInstance,
                  opponent_instance: GameInstance,
                  online_lobby: OnlineLobby,
-                 online_data: GuiCom):
+                 online_data: GuiCom,
+                 jwt: str):
 
         websocket.enableTrace(True)
         self.status = 'hello'
         self.user_id = user_id
+        self.jwt = jwt
         self.game_instance = game_instance
         self.opponent_instance = opponent_instance
         self.opponent = None
         self.online_lobby_gui = online_lobby
         self.current_waiter_list = []
         self.current_approacher_list = []
-        self.ws = websocket.WebSocketApp(
+        self.ws: websocket.WebSocketApp = websocket.WebSocketApp(
             URLS.mp_server_url,
             on_open=lambda ws: self.on_open(ws),
             on_message=lambda ws, msg: self.on_message(ws, msg),
@@ -103,8 +104,15 @@ class OnlineHandler:
         elif todo == SCODES['waiting_list_get']:
             self.s_waiting_list_get()
 
-    def on_open(self, ws):  # 연결될때 전송, JWT 인증 필요
-        ws.send(self.user_id)
+    def on_open(self, ws: websocket.WebSocketApp):  # 연결될때 실행됨.
+        self.jwt_auth()
+
+    def jwt_auth(self):
+        req = {
+            'id': self.user_id,
+            'jwt': self.jwt
+        }
+        self.send_json_req(req)
 
     def on_message(self, ws, message):
         try:
@@ -229,7 +237,12 @@ class OnlineHandler:
 
     # 이하 전송
     def send_json_req(self, req):
-        self.ws.send(json.dumps(req))
+        try:
+            self.ws.send(json.dumps(req))
+        except websocket.WebSocketConnectionClosedException:
+            sig = self.build_dict(t='server_connection_lost')
+            self.online_lobby_gui.signal.emit(sig)
+
 
     @staticmethod
     def build_dict(t: str, d=None):

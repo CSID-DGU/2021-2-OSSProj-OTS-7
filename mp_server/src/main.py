@@ -5,6 +5,7 @@ from .user_instance import UserInstance
 from .message_executors import UserMsgExecutor, ServerMsgExecutor
 from .consts import WAITING_CHANNEL
 from queue import Queue
+from . import auth
 import threading
 import asyncio
 import json
@@ -63,13 +64,27 @@ async def server_message_exec(msg):
 
 @app.websocket("/ws")
 async def websocket_connection(websocket: WebSocket):
-    user: UserInstance = await user_instance_create(websocket)  # 연결시 플레이어 커넥션 객체를 생성하고 반환함.
-    await user_message_receive(websocket, user)  # 클라이언트에서 보내는 데이터를 연결이 끝나기 전까지 받아옴.
-
-
-async def user_instance_create(websocket: WebSocket) -> UserInstance:
     await websocket.accept()  # 연결 수락
-    player_id = str(await websocket.receive_text())  # 처음 받는 텍스트를 플레이어 아이디로 처리, 추후 jwt 인증 로직 넣을 예정
+    player_auth_req: dict = await websocket.receive_json()
+    is_valid_player: bool = await init_auth(player_auth_req)
+
+    if is_valid_player:
+        user: UserInstance = await user_instance_create(websocket, player_auth_req['id'])  # 연결시 플레이어 커넥션 객체를 생성하고 반환함.
+        await user_message_receive(websocket, user)  # 클라이언트에서 보내는 데이터를 연결이 끝나기 전까지 받아옴.
+    else:
+        await websocket.close()
+
+
+async def init_auth(player_auth_json: dict) -> bool:
+    # try:
+    is_valid_player: bool = await auth.is_jwt_valid(player_auth_json.get('id'), player_auth_json.get('jwt'))
+    # except auth.ValidateError:
+    #     is_valid_player: bool = False
+
+    return is_valid_player
+
+
+async def user_instance_create(websocket: WebSocket, player_id) -> UserInstance:
     rd_manager.msg_pubsub.subscribe(player_id)  # redis player_id 채널 구독
     user_instance = UserInstance(player_id=player_id, websocket=websocket)
     players_dict[player_id] = user_instance

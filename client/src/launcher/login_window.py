@@ -30,22 +30,33 @@ class LoginWindowView(QWidget):
 
 
 class LoginWindow(LoginWindowView):
-    def __init__(self):
+    def __init__(self, is_test_mode=False):
         super().__init__()
         self.player_id = None
+        self.jwt = None
+        self.test_mode = is_test_mode
 
     def run_online(self):
-        run_game.run_online(self.player_id)
+        run_game.run_online(self.player_id, self.jwt)
 
     def on_login_btn_clicked(self):
-        print('asd')
-        self.player_id = self.input_name.text()
-        self.run_online()
-        self.close()
-        # res = request_login(self.input_email.text(), self.input_pwd.text())
-        # if res['msg'] != "failed":
-        #     self.player_id = res['msg']
-        #     self.run_online()
-        #     self.close()
-        # else:
-        #     print("fail")
+        if self.test_mode:
+            self.player_id = self.input_name.text()
+            self.run_online()
+            self.close()
+        else:
+            if self.req_auth() is True:
+                self.run_online()
+                self.close()
+
+    def req_auth(self):
+        res: dict = request_login(self.input_name.text(), self.input_pwd.text())
+        print(res)
+        if res['msg'] != "failed":
+            self.player_id = res['msg'][0]
+            self.jwt = res['msg'][1]
+            print(res)
+            return True
+        else:
+            print("fail")
+            return False
