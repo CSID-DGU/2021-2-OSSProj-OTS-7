@@ -26,9 +26,6 @@ class LauncherView(QWidget):
         self.single_btn.clicked.connect(self.on_single_btn_clicked)
         self.layout.addWidget(self.single_btn)
 
-        self.dual_btn = QPushButton("Dual play")
-        self.dual_btn.clicked.connect(self.on_dual_btn_clicked)
-        self.layout.addWidget(self.dual_btn)
 
         self.online_btn = QPushButton("Online play")
         self.online_btn.clicked.connect(self.on_online_btn_clicked)
@@ -41,12 +38,18 @@ class LauncherView(QWidget):
         self.help_btn = QPushButton("Help")
         self.help_btn.clicked.connect(self.on_help_btn_clicked)
         self.layout.addWidget(self.help_btn)
+
+        self.dual_btn = QPushButton("GitHub")
+        self.dual_btn.clicked.connect(self.on_github_btn_clicked)
+        self.layout.addWidget(self.dual_btn)
+
+
         self.show()
 
     def on_single_btn_clicked(self):  # override
         pass
 
-    def on_dual_btn_clicked(self):  # override
+    def on_github_btn_clicked(self):  # override
         pass
 
     def on_online_btn_clicked(self):  # override
@@ -68,15 +71,8 @@ class Launcher(LauncherView):
         self.close()
         run_game.run_single()
 
-    def on_dual_btn_clicked(self):
-        mb = QMessageBox()
-        mb.setText('개발중입니다.')
-        mb.setWindowTitle('WIP')
-        mb.setStandardButtons(QMessageBox.Ok)
-        res = mb.exec_()
-        if res:
-            mb.close()
-        # self.close()
+    def on_github_btn_clicked(self):
+        webbrowser.open(URLS.github_url)
 
     def on_online_btn_clicked(self):
         self.close()
