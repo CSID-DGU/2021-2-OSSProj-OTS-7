@@ -7,17 +7,17 @@ class LoginWindowView(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-        self.label = QLabel("please login")
-        self.layout.addWidget(self.label)
+        # self.label = QLabel("Please Login")
+        # self.layout.addWidget(self.label)
         self.setLayout(self.layout)
-        self.setGeometry(150, 150, 200, 200)
+        # self.setGeometry(150, 150, 200, 200)
         self.setWindowTitle('OTS')
 
         self.input_name = QLineEdit()
-        self.input_name.setPlaceholderText('email 입력')
+        self.input_name.setPlaceholderText('ID')
         self.layout.addWidget(self.input_name)
         self.input_pwd = QLineEdit()
-        self.input_pwd.setPlaceholderText('비밀번호 입력')
+        self.input_pwd.setPlaceholderText('Password')
         self.input_pwd.setEchoMode(QLineEdit.Password)
         self.layout.addWidget(self.input_pwd)
 

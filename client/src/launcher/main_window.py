@@ -3,6 +3,7 @@ import webbrowser
 
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, QMessageBox
+from qt_material import apply_stylesheet
 
 from .login_window import LoginWindow
 from ..consts.asset_paths import Path
@@ -14,6 +15,7 @@ class LauncherView(QWidget):
     def __init__(self):
         self.app = QApplication(sys.argv)
         super().__init__()
+        apply_stylesheet(self.app, theme='dark_teal.xml')
         self.setMinimumSize(500, 0)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
