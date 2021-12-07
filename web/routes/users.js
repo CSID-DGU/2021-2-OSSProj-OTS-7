@@ -3,6 +3,9 @@ var router = express.Router();
 const { User } = require('../models');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const path = require("path");
+const secret_key = require(path.join(__dirname, '..', 'config', 'secretKey.json'));
+
 
 router.post('/login', async (req, res, next) => {
   const { name, password } = req.body;
@@ -17,12 +20,12 @@ router.post('/login', async (req, res, next) => {
       } else {
         let accessToken = jwt.sign(
           { name, type: user.userType, verified: user.verified },
-          'secret',
+          secret_key.SECRET_KEY,
           { expiresIn: '30m' },
         );
         let refreshToken = jwt.sign(
           { name, type: user.userType, verified: user.verified },
-          'secret',
+          secret_key.SECRET_KEY,
           { expiresIn: '60m' },
         );
         req.cache.set(name, refreshToken);
