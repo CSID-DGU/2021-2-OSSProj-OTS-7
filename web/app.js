@@ -18,7 +18,11 @@ sequelize.sync();
 
 // redis connect
 app.use((req, res, next) => {
-  const redisClient = redis.createClient(6379, 'localhost');
+  const redisClient = redis.createClient({
+    "host": "127.0.0.1",
+    "port": 6379,
+    "db": 5
+  });
   req.cache = redisClient;
   next();
 });
