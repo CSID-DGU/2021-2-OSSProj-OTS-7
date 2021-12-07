@@ -18,7 +18,6 @@ except ModuleNotFoundError:
         print(f'module not found err \n loser {user_id=}')
         pass
 
-
-async def auth_jwt_validate(user_id: str, jwt: str) -> bool:
-    pass
-
+# async def auth_jwt_validate(user_id: str, jwt: str) -> bool:
+#     pass
+#

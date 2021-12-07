@@ -76,10 +76,10 @@ async def websocket_connection(websocket: WebSocket):
 
 
 async def init_auth(player_auth_json: dict) -> bool:
-    try:
-        is_valid_player: bool = await auth.is_jwt_valid(player_auth_json.get('id'), player_auth_json.get('jwt'))
-    except auth.ValidateError:
-        is_valid_player: bool = False
+    # try:
+    is_valid_player: bool = await auth.is_jwt_valid(player_auth_json.get('id'), player_auth_json.get('jwt'))
+    # except auth.ValidateError:
+    #     is_valid_player: bool = False
 
     return is_valid_player
 
