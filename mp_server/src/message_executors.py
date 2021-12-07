@@ -2,7 +2,8 @@ from .redis_manager import RedisManager
 from .user_instance import UserInstance
 from .consts import WAITING_CHANNEL, SERVER_CODES, USER_RCODES, USER_SCODES
 from . import api_requests
-
+from queue import Queue
+import threading
 
 def build_dict(data_type, data):
     to_return = {
@@ -107,6 +108,9 @@ class ServerMsgExecutor:
 class UserMsgExecutor:
     def __init__(self, redis_manager: RedisManager):
         self.rdm = redis_manager
+        self.api_post_queue = Queue()
+        api_t = threading.Thread(target=self.post_req_process, daemon=True)
+        api_t.start()
 
     @staticmethod
     async def user_msg_parse(msg):
@@ -158,14 +162,22 @@ class UserMsgExecutor:
         if winner is not None:
             await self.publish_result(winner, user)
 
+    def post_req_process(self):
+        while True:
+            req: dict = self.api_post_queue.get()
+            if req['t'] == 'loser':
+                api_requests.db_post_loser(req['d'])
+            elif req['t'] == 'winner':
+                api_requests.db_post_winner(req['d'])
+
     async def publish_result(self, winner: str, user: UserInstance):
         for player in [user.player_id, user.opponent]:
             if player == winner:
                 self.rdm.msg_broker.publish(player, SERVER_CODES['winner'])
-                await api_requests.db_post_winner(player)
+                self.api_post_queue.put(build_dict('winner', player))
             else:
                 self.rdm.msg_broker.publish(player, SERVER_CODES['loser'])
-                await api_requests.db_post_loser(player)
+                self.api_post_queue.put(build_dict('loser', player))
         await self.rdm.game_session_clear(user.current_match_id)  # 정보 전송 후 레디스에 저장된 세션 정보 삭제
 
     # 에러 발생시 매치 종료 신호
