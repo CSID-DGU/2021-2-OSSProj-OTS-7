@@ -20,12 +20,12 @@ router.post('/login', async (req, res, next) => {
       } else {
         let accessToken = jwt.sign(
           { name, type: user.userType, verified: user.verified },
-          secret_key,
+          secret_key.SECRET_KEY,
           { expiresIn: '30m' },
         );
         let refreshToken = jwt.sign(
           { name, type: user.userType, verified: user.verified },
-          secret_key,
+          secret_key.SECRET_KEY,
           { expiresIn: '60m' },
         );
         req.cache.set(name, refreshToken);
