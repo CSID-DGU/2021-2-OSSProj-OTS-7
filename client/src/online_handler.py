@@ -237,7 +237,12 @@ class OnlineHandler:
 
     # 이하 전송
     def send_json_req(self, req):
-        self.ws.send(json.dumps(req))
+        try:
+            self.ws.send(json.dumps(req))
+        except websocket.WebSocketConnectionClosedException:
+            sig = self.build_dict(t='server_connection_lost')
+            self.online_lobby_gui.signal.emit(sig)
+
 
     @staticmethod
     def build_dict(t: str, d=None):
