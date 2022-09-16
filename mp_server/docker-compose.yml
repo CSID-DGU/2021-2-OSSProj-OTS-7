@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   ots_server:
-    image: ots
+    build: .
     ports:
       - "8000:80"
   rj:
