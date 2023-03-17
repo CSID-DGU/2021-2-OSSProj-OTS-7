@@ -1,5 +1,5 @@
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QHBoxLayout, \
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QHBoxLayout, \
     QLabel
 from .gui_com import GuiCom
 import os

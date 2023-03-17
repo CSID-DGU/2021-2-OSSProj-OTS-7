@@ -1,8 +1,8 @@
 import sys
 import webbrowser
 
-from PySide2.QtGui import QIcon, QPixmap
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, QMessageBox
+from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QApplication, QMessageBox
 from qt_material import apply_stylesheet
 
 from .login_window import LoginWindow
