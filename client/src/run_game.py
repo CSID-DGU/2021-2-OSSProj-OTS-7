@@ -51,5 +51,4 @@ def run_online(player_id, jwt) -> None:
     oh.gui_emit_thread.start()
     oh.game_instance.status = 'mp_hello'
 
-    t = threading.Thread(target=ots.main_loop, daemon=True)
-    t.start()
+    ots.main_loop()
